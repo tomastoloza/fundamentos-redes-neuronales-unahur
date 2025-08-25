@@ -1,0 +1,155 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath} % Para ecuaciones matemáticas avanzadas
+\usepackage{amsfonts} % Para símbolos de fuentes matemáticas
+\usepackage{amssymb} % Para símbolos de fuentes matemáticas
+
+\title{Fundamentos de Redes Neuronales Artificiales: Perceptrón Simple}
+\author{Resumen Generado}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+Este resumen abarca los conceptos fundamentales de las redes neuronales artificiales, centrándose en el perceptrón simple, desde su introducción hasta el algoritmo de aprendizaje, cubriendo las páginas 1 a 48 del documento original.
+
+\section{Introducción a las Redes Neuronales Artificiales y el Problema de Separación (Páginas 2-24)}
+
+\subsection{El Problema Fundamental: Clasificación de Datos}
+El documento introduce el tema presentando un problema de clasificación simple: la separación de puntos en dos clases distintas (por ejemplo, puntos rojos y negros) en un espacio bidimensional ($\mathbb{R}^{2}$). Se observa que, si los datos son linealmente separables, es posible trazar una recta que divida estas dos clases.
+
+\subsection{Generalización a Hiperplanos}
+\begin{itemize}
+    \item En un espacio de $n$ dimensiones ($\mathbb{R}^{n}$), una recta de separación se generaliza a un \textbf{hiperplano}.
+    \item Si $n=3$, el hiperplano sería un plano.
+    \item \textbf{Representación del Hiperplano}: El documento explica que un hiperplano puede representarse por su vector \textbf{normal} al que llamaremos $w$. En $\mathbb{R}^{2}$, este vector es $(w_{1}, w_{2})$.
+\end{itemize}
+
+\subsection{Proyecciones y Clasificación}
+\begin{itemize}
+    \item Se introduce el concepto de la proyección de un vector de datos ($\xi^{\mu}$) sobre el vector normal $w$.
+    \item El \textbf{producto interno} $a \cdot b = \sum_{i=1}^{n}a_{i}b_{i}$ se relaciona con la proyección mediante la fórmula $a \cdot b = ||a|| ||b|| \cos(\alpha)$, donde $\alpha$ es el ángulo entre los vectores.
+    \item La proyección de un vector $a$ sobre $b$ es $||a|| \cos(\alpha) = \frac{a \cdot b}{||b||}$. Si $||b|| = 1$, la proyección es simplemente el producto interno $a \cdot b$.
+    \item En el contexto de la clasificación, si la proyección de un punto de datos sobre $w$ es positiva, puede pertenecer a una clase, y si es negativa, a la otra.
+\end{itemize}
+
+\subsection{Hiperplanos que No Pasan por el Origen}
+\begin{itemize}
+    \item Las ecuaciones de rectas y planos que no pasan por el origen incluyen un término constante (e.g., $y = mx + b$ o $Ax + By + Cz + D = 0$).
+    \item Generalizando, la ecuación de un hiperplano en $\mathbb{R}^{n}$ que no pasa por el origen se expresa como: $\sum_{i=1}^{n}w_{i}\xi_{i}-w_{0}=0$. Aquí, $w_{0}$ (el "umbral" o "bias") permite que el hiperplano se desplace fuera del origen.
+\end{itemize}
+
+\subsection{Conclusión de la Introducción}
+Para puntos distribuidos en $\mathbb{R}^{n}$ que son linealmente separables, el hiperplano de separación está dado por la ecuación:
+$$
+\sum_{i=1}^{n}w_{i}\xi_{i}-w_{0}=0
+$$
+
+\section{Modelo de Neurona de McCulloch y Pitts (Páginas 25-35)}
+
+\subsection{Orígenes Históricos}
+\begin{itemize}
+    \item En 1943, Warren McCulloch y Walter Pitts propusieron un modelo de neurona artificial, basándose en el conocimiento de la morfología y funcionamiento de las neuronas biológicas.
+    \item Su artículo, "Un cálculo lógico de ideas inherentes en actividad nerviosa", sentó las bases para especular sobre el poder computacional de conjuntos de neuronas interconectadas.
+\end{itemize}
+
+\subsection{Inspiración Biológica (Simplificada)}
+El modelo simplifica la estructura de una neurona biológica (dendritas, soma, axón, sinapsis) para crear un componente computacional.
+
+\subsection{Formalización del Modelo}
+\begin{itemize}
+    \item El modelo de neurona de McCulloch y Pitts recibe múltiples entradas $\xi_{i}$ y a cada entrada se le asocia un peso sináptico $w_{i}$.
+    \item Se calcula una "excitación" $h = \sum_{i=1}^{n}w_{i}\xi_{i}$.
+    \item La salida $O$ de la neurona se determina aplicando una \textbf{función de activación de paso (escalón)} a la excitación, comparándola con un \textbf{umbral}.
+    \item Formalmente, la salida $O$ es:
+    $$
+    O = \theta\left(\sum_{i=1}^{n}w_{i}\xi_{i}-umbral\right)
+    $$
+    Donde $\theta(x)$ es la función escalón:
+    $$
+    \theta(x) = \begin{cases} 1 & \text{si } x \ge 0 \\ 0 & \text{en otro caso} \end{cases}
+    $$
+    O, como se usa más adelante para el aprendizaje del perceptrón:
+    $$
+    \theta(x) = \begin{cases} 1 & \text{si } x \ge 0 \\ -1 & \text{en otro caso} \end{cases}
+    $$
+    \item Si el umbral se denota como $w_{0}$, una neurona de McCulloch y Pitts puede resolver problemas de separabilidad lineal.
+\end{itemize}
+
+\subsection{La Necesidad de Aprendizaje}
+El documento señala que, si bien el modelo puede resolver el problema, aún no se explica cómo se obtienen los valores de los pesos ($w_{i}$). Se plantea la idea de que, dado que el cerebro aprende, debe existir un proceso de adaptación para encontrar la solución.
+
+\section{Aprendizaje en el Perceptrón: Conjetura de Hebb y Regla de Rosenblatt (Páginas 36-47)}
+
+\subsection{La Conjetura de Hebb}
+\begin{itemize}
+    \item Donald Hebb (1904-1969) propuso la famosa frase: "\textbf{Neurons that fire together, wire together}" (Las neuronas que se activan juntas, se conectan juntas).
+    \item Esta conjetura postula que las conexiones (sinapsis) entre neuronas se refuerzan si su actividad está correlacionada a lo largo del tiempo, y este refuerzo depende de la intensidad y duración de dicha correlación.
+    \item Esta idea proporcionó una base para explicar fenómenos de aprendizaje, como el condicionamiento clásico de Pavlov.
+\end{itemize}
+
+\subsection{Frank Rosenblatt y el Perceptrón}
+\begin{itemize}
+    \item Frank Rosenblatt (1928-1971) formalizó la conjetura de Hebb para el perceptrón, llevando a la construcción del Mark I en 1960, una computadora capaz de aprender por ensayo y error.
+\end{itemize}
+
+\subsection{La Regla de Actualización de Pesos del Perceptrón}
+\begin{itemize}
+    \item Asumiendo la conjetura de Hebb, los pesos sinápticos ($w_{i}$) se actualizan cada vez que el perceptrón recibe una nueva entrada ($\xi^{\mu}$).
+    \item La actualización se formula como: $w_{i}^{\text{nuevo}} = w_{i}^{\text{viejo}} + \Delta w_{i}$.
+    \item El valor de la actualización $\Delta w_{i}$ debe depender de la entrada $\xi_{i}^{\mu}$ y de la salida esperada $\zeta^{\mu}$ (salida deseada) en contraste con la salida obtenida $O^{\mu}$.
+    \item La regla de aprendizaje del perceptrón se define como:
+    $$
+    \Delta w_{i} = \eta (\zeta^{\mu} - O^{\mu})\xi_{i}^{\mu}
+    $$
+    Donde:
+    \begin{itemize}
+        \item $\eta$ (eta) es la \textbf{tasa de aprendizaje}, una constante de proporcionalidad que determina el tamaño del paso en la actualización.
+        \item $\zeta^{\mu}$ es la salida deseada para la entrada $\mu$.
+        \item $O^{\mu}$ es la salida actual del perceptrón para la entrada $\mu$.
+        \item $\xi_{i}^{\mu}$ es la i-ésima componente de la entrada $\mu$.
+    \end{itemize}
+\end{itemize}
+
+\subsection{Mecanismo de Actualización}
+\begin{itemize}
+    \item \textbf{Si} $O^{\mu} = \zeta^{\mu}$: No hay error, por lo tanto, $\Delta w_{i} = 0$ y no se actualizan los pesos.
+    \item \textbf{Si} $O^{\mu} \ne \zeta^{\mu}$: Hay un error, y los pesos se actualizan:
+    \begin{itemize}
+        \item \textbf{Caso 1:} $\zeta^{\mu} > O^{\mu}$ (e.g., $\zeta^{\mu}=1$ y $O^{\mu}=-1$). El término $(\zeta^{\mu} - O^{\mu})$ será positivo. Esto provoca que el vector $w$ se mueva hacia $\xi^{\mu}$ (en una proporción $\eta$), haciendo que el producto interno $w \cdot \xi^{\mu}$ sea mayor la próxima vez, aumentando la probabilidad de que $O^{\mu}$ coincida con $\zeta^{\mu}$.
+        \item \textbf{Caso 2:} $\zeta^{\mu} < O^{\mu}$ (e.g., $\zeta^{\mu}=-1$ y $O^{\mu}=1$). El término $(\zeta^{\mu} - O^{\mu})$ será negativo. Esto provoca que el vector $w$ se aleje de $\xi^{\mu}$ (en una proporción $\eta$), haciendo que el producto interno $w \cdot \xi^{\mu}$ sea menor la próxima vez, aumentando la probabilidad de que $O^{\mu}$ coincida con $\zeta^{\mu}$.
+    \end{itemize}
+\end{itemize}
+Esta regla asegura que los pesos se ajusten para reducir el error entre la salida obtenida y la salida deseada.
+
+\section{Algoritmo del Perceptrón Simple (Página 48)}
+
+\subsection{Conceptos Clave}
+\begin{itemize}
+    \item \textbf{Época}: Es el ciclo completo en el que todas las entradas del conjunto de entrenamiento han sido expuestas al perceptrón al menos una vez.
+    \item $p$: Cantidad de entradas en el conjunto de entrenamiento.
+    \item $x[.]$: El conjunto de entrenamiento. Cada entrada tiene dimensión $N+1$, donde se agrega una coordenada con valor 1 (o un valor constante) para manejar el umbral $w_{0}$ de manera implícita como un peso más.
+    \item $y[.]$: Las salidas deseadas correspondientes a cada entrada en $x[.]$ (también denotadas como $\zeta^{\mu}$).
+    \item $w$: El vector de pesos "sinápticos" que incluye el peso para el umbral.
+    \item $\text{signo()}$: La función de activación escalón utilizada por el perceptrón simple.
+\end{itemize}
+
+\subsection{Estructura General del Algoritmo}
+El algoritmo itera hasta que el error sea cero (es decir, el perceptrón clasifica correctamente todas las entradas del conjunto de entrenamiento) o hasta que se alcance una cota máxima de iteraciones (COTA).
+
+Dentro del bucle principal:
+\begin{enumerate}
+    \item \textbf{Selección de Entrada}: Se elige una entrada aleatoria del conjunto de entrenamiento.
+    \item \textbf{Cálculo de Excitación}: Se calcula la excitación $h = x[i\_x] \cdot w$ (producto interno entre la entrada y el vector de pesos).
+    \item \textbf{Cálculo de Activación}: Se obtiene la salida $O = \text{signo}(h)$.
+    \item \textbf{Cálculo de} $\Delta w$: Se aplica la regla de aprendizaje del perceptrón: $\Delta w = \eta * (y[i\_x] - O) \cdot x[i\_x]$.
+    \item \textbf{Actualización de Pesos}: Los pesos se actualizan: $w = w + \Delta w$.
+    \item \textbf{Cálculo de Error}: Se calcula el error total del perceptrón sobre todo el conjunto de entrenamiento.
+    \item \textbf{Actualización de Mínimos}: Si el error actual es menor que el `error_min` registrado hasta el momento, se actualizan `error_min` y `w_min` (para guardar los mejores pesos encontrados).
+    \item \textbf{Incremento de Iteración}: Se incrementa el contador de iteraciones.
+\end{enumerate}
+Este proceso iterativo permite al perceptrón "aprender" los pesos óptimos que le permiten separar linealmente las clases de datos.
+
+\end{document}
