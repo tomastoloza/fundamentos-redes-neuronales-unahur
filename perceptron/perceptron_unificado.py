@@ -3,15 +3,14 @@ import numpy as np
 class PerceptronUnificado:
     
     def __init__(self, num_entradas, tasa_aprendizaje=1.0, max_epocas=1000, 
-                 error_min=0.01, verbose=True):
+                 error_min=0.01, verbose=True, random_seed=None):
         self.num_entradas = num_entradas
         self.tasa_aprendizaje = tasa_aprendizaje
         self.max_epocas = max_epocas
         self.error_min = error_min
         self.verbose = verbose
-        
-        self.w = np.random.uniform(-1, 1, (num_entradas + 1, 1))
-        
+        self.rng = np.random.default_rng(random_seed)
+        self.w = self.rng.uniform(-1, 1, (num_entradas + 1, 1))
         self.historial_errores = []
         self.epoca_convergencia = None
     
@@ -62,7 +61,7 @@ class PerceptronUnificado:
             raise ValueError("tipo_activacion debe ser 'sigmoide', 'escalon' o 'lineal'")
         
         if self.verbose:
-            print(f"🧠 ENTRENANDO PERCEPTRÓN {nombre_tipo}")
+            print(f"ENTRENANDO PERCEPTRÓN {nombre_tipo}")
             print(f"Pesos iniciales: {self.w.flatten()}")
             print()
         
@@ -83,7 +82,7 @@ class PerceptronUnificado:
                 self.epoca_convergencia = i + 1
                 break
             
-            indice = np.random.randint(0, len(entradas))
+            indice = self.rng.integers(0, len(entradas))
             entrada = np.append(entradas[indice], 1)
             
             h = np.dot(entrada, self.w)
@@ -102,15 +101,24 @@ class PerceptronUnificado:
             
             i += 1
         
-        return self._generar_resultado_entrenamiento(i)
+        return self._generar_resultado_entrenamiento(i, tipo_activacion)
     
-    def _generar_resultado_entrenamiento(self, epoca_final):
+    def _generar_resultado_entrenamiento(self, epoca_final, tipo_activacion):
+        nombres_activacion = {
+            'sigmoide': 'Sigmoide (No Lineal)',
+            'escalon': 'Escalón (Lineal)', 
+            'lineal': 'Lineal (Regresión)'
+        }
+        nombre_activacion = nombres_activacion.get(tipo_activacion, tipo_activacion)
+        
         return {
             'pesos_finales': self.w.copy(),
             'epoca_final': epoca_final,
             'epoca_convergencia': self.epoca_convergencia,
             'historial_errores': self.historial_errores.copy(),
-            'error_final': self.historial_errores[-1] if self.historial_errores else None
+            'error_final': self.historial_errores[-1] if self.historial_errores else None,
+            'tipo_activacion': tipo_activacion,
+            'nombre_activacion': nombre_activacion
         }
     
     def predecir(self, entrada, tipo_activacion='sigmoide'):
@@ -151,8 +159,16 @@ class PerceptronUnificado:
         }
     
     def mostrar_resultados(self, entradas, salidas_esperadas, nombre_modelo, tipo_activacion='sigmoide'):
+        nombres_activacion = {
+            'sigmoide': 'Sigmoide (No Lineal)',
+            'escalon': 'Escalón (Lineal)', 
+            'lineal': 'Lineal (Regresión)'
+        }
+        nombre_activacion = nombres_activacion.get(tipo_activacion, tipo_activacion)
         tipo_nombre = "LINEAL" if tipo_activacion == 'escalon' else "NO LINEAL"
+        
         print(f"\n=== RESULTADOS PERCEPTRÓN {tipo_nombre} - {nombre_modelo} ===")
+        print(f"Función de activación: {nombre_activacion}")
         print(f"Pesos finales: {self.w.flatten()}")
         
         if self.epoca_convergencia:

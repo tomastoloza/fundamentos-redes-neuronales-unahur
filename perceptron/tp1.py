@@ -11,20 +11,17 @@ def cargar_datos_tp1():
         num_ejemplos = entradas_raw.shape[0]
         entradas = np.column_stack([entradas_raw, np.ones(num_ejemplos)])
         
-        print(f"✅ Datos cargados exitosamente:")
-        print(f"   • {num_ejemplos} ejemplos")
-        print(f"   • {entradas_raw.shape[1]} características + sesgo")
+        print(f"Datos cargados exitosamente:")
+        print(f"{num_ejemplos} ejemplos")
+        print(f"{entradas_raw.shape[1]} características + sesgo")
         
         return entradas, salidas_raw
         
     except FileNotFoundError as e:
-        print(f"❌ Error: No se encontraron los archivos de datos")
-        print(f"   Asegúrese de que existan:")
-        print(f"   • TP1-ej2-Conjunto-entrenamiento.txt")
-        print(f"   • TP1-ej2-Salida-deseada.txt")
+        print(f"Error: No se encontraron los archivos de datos")
         return None, None
     except Exception as e:
-        print(f"❌ Error al cargar datos: {e}")
+        print(f"Error al cargar datos: {e}")
         return None, None
 
 def normalizar_datos(entradas, salidas):
@@ -77,9 +74,9 @@ def perceptron_regresion(entradas, salidas, tasa_aprendizaje, max_epocas):
     
     resultado = perceptron.entrenar(entradas_sin_sesgo, salidas, tipo_activacion='sigmoide')
     
-    return perceptron.w.flatten(), perceptron.historial_errores
+    return perceptron.w.flatten(), perceptron.historial_errores, resultado
 
-def evaluar_modelo_regresion(pesos, entradas, salidas_reales):
+def evaluar_modelo_regresion(pesos, entradas):
     predicciones = []
     
     for i in range(len(entradas)):
@@ -97,7 +94,7 @@ def evaluar_modelo_regresion(pesos, entradas, salidas_reales):
         'predicciones': predicciones
     }
 
-def guardar_resultados_prediccion(y_test, predicciones, pesos_finales, error_final, timestamp):
+def guardar_resultados_prediccion(y_test, predicciones, pesos_finales, error_final, timestamp, tipo_activacion='sigmoide'):
     # Crear carpeta de resultados si no existe
     carpeta_resultados = "resultados"
     if not os.path.exists(carpeta_resultados):
@@ -107,11 +104,20 @@ def guardar_resultados_prediccion(y_test, predicciones, pesos_finales, error_fin
     nombre_archivo = f"resultados_tp1_{timestamp.strftime('%Y%m%d_%H%M%S')}.txt"
     ruta_completa = os.path.join(carpeta_resultados, nombre_archivo)
     
+    # Mapear tipo de activación a nombre descriptivo
+    nombres_activacion = {
+        'sigmoide': 'Sigmoide (No Lineal)',
+        'escalon': 'Escalón (Lineal)', 
+        'lineal': 'Lineal (Regresión)'
+    }
+    nombre_activacion = nombres_activacion.get(tipo_activacion, tipo_activacion)
+    
     with open(ruta_completa, 'w', encoding='utf-8') as f:
         f.write("=" * 80 + "\n")
         f.write("RESULTADOS DE PREDICCIÓN - TP1-EJ2 (REGRESIÓN)\n")
         f.write("=" * 80 + "\n")
         f.write(f"Timestamp de ejecución: {timestamp.strftime('%Y-%m-%d %H:%M:%S')}\n")
+        f.write(f"Función de activación: {nombre_activacion}\n")
         f.write(f"Error final (MSE): {error_final:.6f}\n")
         f.write(f"Pesos finales: {pesos_finales}\n")
         f.write("\n")
@@ -197,11 +203,11 @@ def entrenar_tp1():
     print(f"   • Épocas máximas: {max_epocas}")
     
     print("\n🚀 Iniciando entrenamiento...")
-    pesos_finales, historial_errores = perceptron_regresion(
+    pesos_finales, historial_errores, resultado_entrenamiento = perceptron_regresion(
         x_train, y_train, tasa_aprendizaje, max_epocas
     )
     
-    metricas_test = evaluar_modelo_regresion(pesos_finales, x_test, y_test)
+    metricas_test = evaluar_modelo_regresion(pesos_finales, x_test)
     
     print("\n🔍 EJEMPLOS DE PREDICCIONES (primeros 10 del conjunto de prueba):")
     print("Real      | Predicción")
@@ -222,7 +228,8 @@ def entrenar_tp1():
         metricas_test['predicciones'], 
         pesos_finales, 
         historial_errores[-1],
-        timestamp_fin
+        timestamp_fin,
+        tipo_activacion=resultado_entrenamiento['tipo_activacion']
     )
     
     duracion = timestamp_fin - timestamp_inicio
