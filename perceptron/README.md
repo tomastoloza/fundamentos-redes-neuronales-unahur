@@ -86,6 +86,61 @@ La limitación fundamental del perceptrón simple escalón es que está matemát
 
 #### **¿Cómo escoger el mejor conjunto de entrenamiento?**
 
+En un problema de aprendizaje supervisado no se trata de escoger un conjunto ya dado, sino de construir un conjunto de entrenamiento adecuado para que el modelo aprenda de manera representativa y sin sesgos.
+
+**Criterios principales:**
+
+- Representatividad: el conjunto debe reflejar la distribución real de los datos y cubrir todas las clases o situaciones posibles.
+
+- Aleatoriedad: la selección de los ejemplos de entrenamiento debe hacerse de manera aleatoria, evitando patrones ocultos que sesguen el aprendizaje.
+
+- Tamaño suficiente: se necesita una cantidad adecuada de datos para capturar la complejidad del problema. Si el conjunto es demasiado pequeño, el perceptrón puede “memorizar” en lugar de generalizar.
+
+- Estratificación (en clasificación): cuando hay varias clases, es importante que estén representadas en la misma proporción que en el conjunto total.
+
+- Calidad y preprocesamiento: los datos deben estar normalizados/escalados para asegurar estabilidad en el entrenamiento y eliminar ruido que no aporte al modelo.
+
+**Aplicado a este TP:**
+
+- Se utilizó una división 80% entrenamiento – 20% prueba, garantizando tanto representatividad como un conjunto independiente para la evaluación.
+
+- Se aplicó normalización de atributos para asegurar estabilidad numérica en el entrenamiento.
+
+- De este modo, el conjunto de entrenamiento construido cumple con los requisitos para que el perceptrón pueda aprender de manera robusta.
+
+###**¿Cómo evaluar la máxima capacidad de generalización?**
+
+La capacidad de generalización es la habilidad del perceptrón de predecir correctamente ejemplos no vistos durante el entrenamiento.
+
+- **Método recomendado:** Validación Cruzada (k-fold)
+
+- El conjunto de datos se divide en k particiones del mismo tamaño.
+
+- Se entrena k veces, usando k-1 particiones para entrenar y 1 para validar.
+
+- Se promedian los resultados para obtener una estimación robusta del rendimiento del modelo.
+
+**Ventajas:**
+
+- Se utilizan todos los datos tanto para entrenamiento como para validación.
+
+- Se obtiene una medida más estable que una única división entrenamiento/prueba.
+
+- Permite detectar sobreajuste (overfitting) de manera más confiable.
+
+**Alternativas complementarias:**
+
+- **Validación anidada:** útil cuando se ajustan hiperparámetros del perceptrón.
+
+- **Bootstrap:** permite estimar incertidumbre en las métricas de desempeño.
+
+- **División entrenamiento/validación/test:** en problemas grandes, se recomienda tener tres subconjuntos diferenciados.
+
+**Implementación en este TP:**
+
+Se realizaron pruebas dividiendo los datos entre conjunto de entrenamiento y conjunto de testeo.
+
+La validación cruzada se identificó como la técnica más robusta para evaluar la máxima capacidad de generalización del perceptrón no lineal con función sigmoide.
 No se trata de "escoger" un conjunto, sino de **crearlo correctamente**:
 
 **Principios fundamentales:**
@@ -98,27 +153,6 @@ No se trata de "escoger" un conjunto, sino de **crearlo correctamente**:
 - División aleatoria 80/20 garantiza representatividad
 - Normalización previa asegura estabilidad numérica
 - Validación en conjunto independiente confirma calidad
-
-#### **¿Cómo evaluar la máxima capacidad de generalización?**
-
-**Técnica óptima: Validación Cruzada (k-fold)**
-
-**Proceso:**
-1. Dividir datos en k particiones (folds)
-2. Entrenar k modelos, usando k-1 folds para entrenamiento y 1 para validación
-3. Promediar resultados de las k iteraciones
-4. Obtener estimación robusta del rendimiento
-
-**Ventajas sobre división simple:**
-- Utiliza todos los datos para entrenamiento y validación
-- Reduce varianza en la estimación del rendimiento
-- Detecta mejor el sobreajuste
-- Proporciona intervalos de confianza
-
-**Alternativas complementarias:**
-- **Validación anidada**: Para selección de hiperparámetros
-- **Bootstrap**: Para estimación de incertidumbre
-- **Validación temporal**: Para datos con dependencia temporal
 
 ---
 
