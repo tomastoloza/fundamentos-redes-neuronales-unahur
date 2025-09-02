@@ -9,17 +9,19 @@ def mostrar_banner():
     print("    PERCEPTRÓN SIMPLE - MÚLTIPLES APLICACIONES")
     print("=" * 60)
     print("Implementación del algoritmo del perceptrón siguiendo el pseudocódigo")
-    print("Aplicaciones: Compuertas lógicas AND/OR y Regresión")
+    print("Aplicaciones: Compuertas lógicas AND/OR/XOR y Regresión")
     print("=" * 60)
 
 def mostrar_menu():
     print("\n🎯 Seleccione una opción:")
     print("1. 🔴 Compuerta AND (Lineal)")
     print("2. 🟡 Compuerta OR (Lineal)") 
-    print("3. 🔵 TP1-EJ2 (Regresión)")
-    print("4. 🧠 Compuerta AND (No Lineal)")
-    print("5. 🧠 Compuerta OR (No Lineal)")
-    print("6. 🚪 Salir")
+    print("3. 🟣 Compuerta XOR (Lineal)")
+    print("4. 🔵 TP1-EJ2 (Regresión)")
+    print("5. 🧠 Compuerta AND (No Lineal)")
+    print("6. 🧠 Compuerta OR (No Lineal)")
+    print("7. 🧠 Compuerta XOR (No Lineal)")
+    print("8. 🚪 Salir")
 
 def ejecutar_compuerta_and_lineal():
     try:
@@ -65,6 +67,28 @@ def ejecutar_compuerta_or_no_lineal():
         print(f"❌ Error ejecutando compuerta OR no lineal: {e}")
         return None
 
+def ejecutar_compuerta_xor_lineal():
+    try:
+        from compuerta_xor import entrenar_compuerta_xor_lineal
+        return entrenar_compuerta_xor_lineal()
+    except ImportError as e:
+        print(f"❌ Error: No se pudo importar compuerta_xor.py: {e}")
+        return None
+    except Exception as e:
+        print(f"❌ Error ejecutando compuerta XOR lineal: {e}")
+        return None
+
+def ejecutar_compuerta_xor_no_lineal():
+    try:
+        from compuerta_xor import entrenar_compuerta_xor_no_lineal
+        return entrenar_compuerta_xor_no_lineal()
+    except ImportError as e:
+        print(f"❌ Error: No se pudo importar compuerta_xor.py: {e}")
+        return None
+    except Exception as e:
+        print(f"❌ Error ejecutando compuerta XOR no lineal: {e}")
+        return None
+
 def ejecutar_tp1():
     try:
         from tp1 import entrenar_tp1
@@ -81,6 +105,7 @@ def validar_archivos():
         'perceptron_unificado.py',
         'compuerta_and.py', 
         'compuerta_or.py',
+        'compuerta_xor.py',
         'tp1.py'
     ]
     
@@ -107,7 +132,7 @@ def main():
     while True:
         try:
             mostrar_menu()
-            opcion = input("\nIngrese su opción (1-6): ").strip()
+            opcion = input("\nIngrese su opción (1-8): ").strip()
             
             if opcion == "1":
                 print("\n" + "="*60)
@@ -119,25 +144,33 @@ def main():
                 
             elif opcion == "3":
                 print("\n" + "="*60)
-                ejecutar_tp1()
+                ejecutar_compuerta_xor_lineal()
                 
             elif opcion == "4":
                 print("\n" + "="*60)
-                ejecutar_compuerta_and_no_lineal()
+                ejecutar_tp1()
                 
             elif opcion == "5":
                 print("\n" + "="*60)
-                ejecutar_compuerta_or_no_lineal()
+                ejecutar_compuerta_and_no_lineal()
                 
             elif opcion == "6":
+                print("\n" + "="*60)
+                ejecutar_compuerta_or_no_lineal()
+                
+            elif opcion == "7":
+                print("\n" + "="*60)
+                ejecutar_compuerta_xor_no_lineal()
+                
+            elif opcion == "8":
                 print("\n👋 ¡Gracias por usar el sistema de perceptrón!")
                 print("🎓 Esperamos que haya sido útil para su aprendizaje.")
                 break
                 
             else:
-                print("❌ Opción inválida. Por favor, seleccione 1-6.")
+                print("❌ Opción inválida. Por favor, seleccione 1-8.")
             
-            if opcion in ["1", "2", "3", "4", "5"]:
+            if opcion in ["1", "2", "3", "4", "5", "6", "7"]:
                 input("\n⏸️  Presione Enter para continuar...")
                 
         except KeyboardInterrupt:

@@ -28,6 +28,7 @@
   
   Entradas:  
   `x = { {−1, 1}, {1, −1}, {−1, −1}, {1, 1} }  `
+  
   Salida esperada:  
   `y = {−1, −1, −1, 1}`
 
@@ -100,6 +101,7 @@ No se trata de "escoger" un conjunto, sino de **crearlo correctamente**:
 - Validación en conjunto independiente confirma calidad
 
 #### **¿Cómo evaluar la máxima capacidad de generalización?**
+Matriz de validacion
 
 **Técnica óptima: Validación Cruzada (k-fold)**
 
