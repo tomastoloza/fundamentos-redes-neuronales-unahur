@@ -1,5 +1,4 @@
 import numpy as np
-from activation_functions import get_activation_function
 from perceptron_printer import PerceptronPrinter
 
 
