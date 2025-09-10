@@ -66,7 +66,7 @@
 
 ### **1. Perceptrón Simple Escalon: Compuertas AND y XOR.**
 
-Se desarrolló una implementación unificada [perceptron_unificado.py](perceptron_unificado.py) que permite entrenar diferentes tipos de perceptrones. El perceptrón simple con función de activación escalón puede resolver la función lógica 'Y' (AND), ya que se trata de un problema linealmente separable: existe una línea recta que puede separar las clases en el espacio de características, lo que permite que el perceptrón converja rápidamente encontrando los pesos correctos. La función AND es un ejemplo clásico de separabilidad lineal. 
+Se desarrolló una implementación unificada [perceptron_unificado.py](perceptron.py) que permite entrenar diferentes tipos de perceptrones. El perceptrón simple con función de activación escalón puede resolver la función lógica 'Y' (AND), ya que se trata de un problema linealmente separable: existe una línea recta que puede separar las clases en el espacio de características, lo que permite que el perceptrón converja rápidamente encontrando los pesos correctos. La función AND es un ejemplo clásico de separabilidad lineal. 
 
 
 En cambio, la función lógica 'O exclusivo' (XOR) no puede ser resuelta por el perceptrón simple, ya que es un problema no linealmente separable: no existe ninguna línea recta que pueda separar correctamente las clases y, por lo tanto, el algoritmo del perceptrón no converge para este caso. 
