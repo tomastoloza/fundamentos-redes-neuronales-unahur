@@ -3,8 +3,8 @@ from activation_functions import sigmoid, sigmoid_derivative, step, step_derivat
 from gate_trainer import entrenar_compuerta_base
 
 
-def _entrenar_compuerta_or_base(funcion_activacion, funcion_derivada, tipo_descripcion, descripcion_entrenamiento, es_entero, config=None):
-    salidas_or = np.array([0, 1, 1, 1])
+def _entrenar_compuerta_xor_base(funcion_activacion, funcion_derivada, tipo_descripcion, descripcion_entrenamiento, es_entero, config=None):
+    salidas_xor = np.array([0, 1, 1, 0])
     
     return entrenar_compuerta_base(
         funcion_activacion=funcion_activacion,
@@ -12,14 +12,14 @@ def _entrenar_compuerta_or_base(funcion_activacion, funcion_derivada, tipo_descr
         tipo_descripcion=tipo_descripcion,
         descripcion_entrenamiento=descripcion_entrenamiento,
         es_entero=es_entero,
-        salidas_esperadas=salidas_or,
-        nombre_compuerta="OR",
+        salidas_esperadas=salidas_xor,
+        nombre_compuerta="XOR",
         config=config
     )
 
 
-def entrenar_compuerta_or_lineal(config=None):
-    return _entrenar_compuerta_or_base(
+def entrenar_compuerta_xor_lineal(config=None):
+    return _entrenar_compuerta_xor_base(
         step, 
         step_derivative, 
         "Lineal (Escalón)", 
@@ -29,8 +29,8 @@ def entrenar_compuerta_or_lineal(config=None):
     )
 
 
-def entrenar_compuerta_or_no_lineal(config=None):
-    return _entrenar_compuerta_or_base(
+def entrenar_compuerta_xor_no_lineal(config=None):
+    return _entrenar_compuerta_xor_base(
         sigmoid, 
         sigmoid_derivative, 
         "No Lineal (Sigmoide)", 
