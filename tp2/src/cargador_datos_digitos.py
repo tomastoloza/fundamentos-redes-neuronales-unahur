@@ -1,14 +1,14 @@
-import numpy as np
-from typing import Tuple, List, Dict, Optional
 import os
 import sys
+from typing import Tuple, List, Dict, Optional
+
+import numpy as np
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 
 from comun.src.utilidades_matematicas import UtilidadesMatematicas
 from comun.constantes.constantes_redes_neuronales import (
-    TAMAÑO_ENTRADA_DIGITOS, NUMERO_CLASES_DIGITOS, ARCHIVO_DATOS_DIGITOS,
-    PORCENTAJE_ENTRENAMIENTO, PORCENTAJE_PRUEBA
+    TAMAÑO_ENTRADA_DIGITOS, ARCHIVO_DATOS_DIGITOS
 )
 
 class CargadorDatosDigitos:

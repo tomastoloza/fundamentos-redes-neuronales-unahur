@@ -1,0 +1,346 @@
+REPORTE DETALLADO - COMPARACIÓN DE CONJUNTOS DE ENTRENAMIENTO
+================================================================================
+
+CATEGORÍA: BALANCE_EQUILIBRADO
+------------------------------------------------------------
+
+Configuración: balance_2_2
+  Entrenamiento: [0, 2, 1, 3]
+  Prueba: [4, 6, 8, 5, 7, 9]
+  Resultados por arquitectura:
+    MINIMA:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 16.7%
+      Épocas hasta convergencia: 326
+      Balance entrenamiento: 1.00
+      Calidad generalización: Pobre
+    COMPACTA:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 16.7%
+      Épocas hasta convergencia: 520
+      Balance entrenamiento: 1.00
+      Calidad generalización: Pobre
+    DIRECTA_ORIGINAL:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 33.3%
+      Épocas hasta convergencia: 709
+      Balance entrenamiento: 1.00
+      Calidad generalización: Pobre
+
+
+Configuración: balance_3_3
+  Entrenamiento: [0, 2, 4, 1, 3, 5]
+  Prueba: [6, 8, 7, 9]
+  Resultados por arquitectura:
+    MINIMA:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 0.0%
+      Épocas hasta convergencia: 272
+      Balance entrenamiento: 1.00
+      Calidad generalización: Pobre
+    COMPACTA:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 25.0%
+      Épocas hasta convergencia: 425
+      Balance entrenamiento: 1.00
+      Calidad generalización: Pobre
+    DIRECTA_ORIGINAL:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 0.0%
+      Épocas hasta convergencia: 428
+      Balance entrenamiento: 1.00
+      Calidad generalización: Pobre
+
+
+Configuración: balance_4_4
+  Entrenamiento: [0, 2, 4, 6, 1, 3, 5, 7]
+  Prueba: [8, 9]
+  Resultados por arquitectura:
+    MINIMA:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 50.0%
+      Épocas hasta convergencia: 219
+      Balance entrenamiento: 1.00
+      Calidad generalización: Regular
+    COMPACTA:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 50.0%
+      Épocas hasta convergencia: 314
+      Balance entrenamiento: 1.00
+      Calidad generalización: Regular
+    DIRECTA_ORIGINAL:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 50.0%
+      Épocas hasta convergencia: 316
+      Balance entrenamiento: 1.00
+      Calidad generalización: Regular
+
+CATEGORÍA: DESBALANCE_CONTROLADO
+------------------------------------------------------------
+
+Configuración: mas_pares_4_2
+  Entrenamiento: [0, 2, 4, 6, 1, 3]
+  Prueba: [8, 5, 7, 9]
+  Resultados por arquitectura:
+    MINIMA:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 25.0%
+      Épocas hasta convergencia: 294
+      Balance entrenamiento: 0.50
+      Calidad generalización: Pobre
+    COMPACTA:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 25.0%
+      Épocas hasta convergencia: 491
+      Balance entrenamiento: 0.50
+      Calidad generalización: Pobre
+    DIRECTA_ORIGINAL:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 25.0%
+      Épocas hasta convergencia: 475
+      Balance entrenamiento: 0.50
+      Calidad generalización: Pobre
+
+
+Configuración: mas_impares_2_4
+  Entrenamiento: [0, 2, 1, 3, 5, 7]
+  Prueba: [4, 6, 8, 9]
+  Resultados por arquitectura:
+    MINIMA:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 25.0%
+      Épocas hasta convergencia: 286
+      Balance entrenamiento: 0.50
+      Calidad generalización: Pobre
+    COMPACTA:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 50.0%
+      Épocas hasta convergencia: 584
+      Balance entrenamiento: 0.50
+      Calidad generalización: Regular
+    DIRECTA_ORIGINAL:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 50.0%
+      Épocas hasta convergencia: 544
+      Balance entrenamiento: 0.50
+      Calidad generalización: Regular
+
+
+Configuración: solo_pares
+  Entrenamiento: [0, 2, 4, 6]
+  Prueba: [8, 1, 3, 5, 7, 9]
+  Resultados por arquitectura:
+    MINIMA:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 16.7%
+      Épocas hasta convergencia: 26
+      Balance entrenamiento: 0.00
+      Calidad generalización: Pobre
+    COMPACTA:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 16.7%
+      Épocas hasta convergencia: 28
+      Balance entrenamiento: 0.00
+      Calidad generalización: Pobre
+    DIRECTA_ORIGINAL:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 16.7%
+      Épocas hasta convergencia: 21
+      Balance entrenamiento: 0.00
+      Calidad generalización: Pobre
+
+
+Configuración: solo_impares
+  Entrenamiento: [1, 3, 5, 7]
+  Prueba: [0, 2, 4, 6, 8, 9]
+  Resultados por arquitectura:
+    MINIMA:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 16.7%
+      Épocas hasta convergencia: 21
+      Balance entrenamiento: 0.00
+      Calidad generalización: Pobre
+    COMPACTA:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 16.7%
+      Épocas hasta convergencia: 22
+      Balance entrenamiento: 0.00
+      Calidad generalización: Pobre
+    DIRECTA_ORIGINAL:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 16.7%
+      Épocas hasta convergencia: 19
+      Balance entrenamiento: 0.00
+      Calidad generalización: Pobre
+
+CATEGORÍA: RANGOS_NUMERICOS
+------------------------------------------------------------
+
+Configuración: numeros_bajos
+  Entrenamiento: [0, 1, 2, 3]
+  Prueba: [4, 5, 6, 7, 8, 9]
+  Resultados por arquitectura:
+    MINIMA:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 33.3%
+      Épocas hasta convergencia: 325
+      Balance entrenamiento: 1.00
+      Calidad generalización: Pobre
+    COMPACTA:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 33.3%
+      Épocas hasta convergencia: 604
+      Balance entrenamiento: 1.00
+      Calidad generalización: Pobre
+    DIRECTA_ORIGINAL:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 33.3%
+      Épocas hasta convergencia: 556
+      Balance entrenamiento: 1.00
+      Calidad generalización: Pobre
+
+
+Configuración: numeros_medios
+  Entrenamiento: [2, 3, 4, 5, 6, 7]
+  Prueba: [0, 1, 8, 9]
+  Resultados por arquitectura:
+    MINIMA:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 25.0%
+      Épocas hasta convergencia: 188
+      Balance entrenamiento: 1.00
+      Calidad generalización: Pobre
+    COMPACTA:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 25.0%
+      Épocas hasta convergencia: 392
+      Balance entrenamiento: 1.00
+      Calidad generalización: Pobre
+    DIRECTA_ORIGINAL:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 25.0%
+      Épocas hasta convergencia: 402
+      Balance entrenamiento: 1.00
+      Calidad generalización: Pobre
+
+
+Configuración: numeros_altos
+  Entrenamiento: [6, 7, 8, 9]
+  Prueba: [0, 1, 2, 3, 4, 5]
+  Resultados por arquitectura:
+    MINIMA:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 50.0%
+      Épocas hasta convergencia: 273
+      Balance entrenamiento: 1.00
+      Calidad generalización: Regular
+    COMPACTA:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 33.3%
+      Épocas hasta convergencia: 431
+      Balance entrenamiento: 1.00
+      Calidad generalización: Pobre
+    DIRECTA_ORIGINAL:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 33.3%
+      Épocas hasta convergencia: 445
+      Balance entrenamiento: 1.00
+      Calidad generalización: Pobre
+
+
+Configuración: extremos
+  Entrenamiento: [0, 1, 8, 9]
+  Prueba: [2, 3, 4, 5, 6, 7]
+  Resultados por arquitectura:
+    MINIMA:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 50.0%
+      Épocas hasta convergencia: 258
+      Balance entrenamiento: 1.00
+      Calidad generalización: Regular
+    COMPACTA:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 33.3%
+      Épocas hasta convergencia: 437
+      Balance entrenamiento: 1.00
+      Calidad generalización: Pobre
+    DIRECTA_ORIGINAL:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 33.3%
+      Épocas hasta convergencia: 577
+      Balance entrenamiento: 1.00
+      Calidad generalización: Pobre
+
+CATEGORÍA: PATRONES_ESPECIFICOS
+------------------------------------------------------------
+
+Configuración: alternados
+  Entrenamiento: [0, 2, 1, 5]
+  Prueba: [3, 4, 6, 7, 8, 9]
+  Resultados por arquitectura:
+    MINIMA:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 50.0%
+      Épocas hasta convergencia: 189
+      Balance entrenamiento: 1.00
+      Calidad generalización: Regular
+    COMPACTA:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 50.0%
+      Épocas hasta convergencia: 392
+      Balance entrenamiento: 1.00
+      Calidad generalización: Regular
+    DIRECTA_ORIGINAL:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 16.7%
+      Épocas hasta convergencia: 533
+      Balance entrenamiento: 1.00
+      Calidad generalización: Pobre
+
+
+Configuración: secuenciales
+  Entrenamiento: [0, 1, 2, 3, 4, 5]
+  Prueba: [6, 7, 8, 9]
+  Resultados por arquitectura:
+    MINIMA:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 25.0%
+      Épocas hasta convergencia: 281
+      Balance entrenamiento: 1.00
+      Calidad generalización: Pobre
+    COMPACTA:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 0.0%
+      Épocas hasta convergencia: 533
+      Balance entrenamiento: 1.00
+      Calidad generalización: Pobre
+    DIRECTA_ORIGINAL:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 0.0%
+      Épocas hasta convergencia: 388
+      Balance entrenamiento: 1.00
+      Calidad generalización: Pobre
+
+
+Configuración: salteados
+  Entrenamiento: [0, 3, 6, 9]
+  Prueba: [1, 2, 4, 5, 7, 8]
+  Resultados por arquitectura:
+    MINIMA:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 33.3%
+      Épocas hasta convergencia: 318
+      Balance entrenamiento: 1.00
+      Calidad generalización: Pobre
+    COMPACTA:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 50.0%
+      Épocas hasta convergencia: 545
+      Balance entrenamiento: 1.00
+      Calidad generalización: Regular
+    DIRECTA_ORIGINAL:
+      Precisión Entrenamiento: 100.0%
+      Precisión Prueba: 16.7%
+      Épocas hasta convergencia: 508
+      Balance entrenamiento: 1.00
+      Calidad generalización: Pobre
