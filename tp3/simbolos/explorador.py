@@ -6,8 +6,8 @@ from matplotlib.widgets import Slider
 from tensorflow import keras
 from tensorflow.keras import layers
 
-from .cargador_modelos import CargadorModelos
-from .procesador_datos import ProcesadorDatos
+from tp3.comun.cargador_modelos import CargadorModelos
+from tp3.comun.procesador_datos import ProcesadorDatos
 
 
 class ExploradorEspacioLatente:
@@ -82,7 +82,7 @@ class ExploradorEspacioLatente:
             return
         
         if self.dimension_latente != 2:
-            print(f"Error: El explorador solo funciona con modelos 2D.")
+            print("Error: El explorador solo funciona con modelos 2D.")
             print(f"Modelo actual tiene dimensión latente: {self.dimension_latente}D")
             print("Use un modelo con dimension_latente=2 (ej: simple_2d, profundo_2d)")
             return
@@ -178,11 +178,7 @@ def main():
                        help='Nombre del modelo a cargar (ej: tp3_lat2_ep300_lr0_001)')
     
     args = parser.parse_args()
-    
-    print("=== EXPLORADOR INTERACTIVO ESPACIO LATENTE ===")
-    print("TP3 - Punto 1: Generación de nuevos caracteres")
-    print()
-    
+
     explorador = ExploradorEspacioLatente(args.modelo)
     if explorador.modelo is not None:
         explorador.explorar_interactivo()

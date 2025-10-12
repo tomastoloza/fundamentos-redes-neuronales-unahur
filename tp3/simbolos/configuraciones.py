@@ -61,17 +61,17 @@ CONFIGURACIONES_AUTOCODIFICADOR = {
 }
 
 CONFIGURACIONES_ENTRENAMIENTO = {
-    # 'rapido': {
-    #     'epochs': 300,
-    #     'patience': 100,
-    #     'validation_split': 0.15
-    # },
+    'rapido': {
+        'epochs': 300,
+        'patience': 100,
+        'validation_split': 0.15
+    },
     
-    # 'normal': {
-    #     'epochs': 800,
-    #     'patience': 100,
-    #     'validation_split': 0.15
-    # },
+    'normal': {
+        'epochs': 800,
+        'patience': 100,
+        'validation_split': 0.15
+    },
     
     'exhaustivo': {
         'epochs': 1500,
@@ -91,6 +91,12 @@ def obtener_configuracion_entrenamiento(nombre):
         return CONFIGURACIONES_ENTRENAMIENTO[nombre]
     else:
         raise ValueError(f"Configuración de entrenamiento '{nombre}' no encontrada")
+
+def obtener_configuraciones_disponibles():
+    return {
+        'autocodificador': list(CONFIGURACIONES_AUTOCODIFICADOR.keys()),
+        'entrenamiento': list(CONFIGURACIONES_ENTRENAMIENTO.keys())
+    }
 
 def listar_configuraciones():
     print("Configuraciones de autocodificador disponibles:")

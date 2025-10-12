@@ -1,5 +1,5 @@
 import numpy as np
-from ..datos.tp3_input import entradas_1, entradas_2, entradas_3
+from tp3.datos.tp3_input import entradas_1, entradas_2, entradas_3
 
 
 class ProcesadorDatos:

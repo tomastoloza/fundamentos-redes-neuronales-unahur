@@ -41,4 +41,22 @@ class CargadorModelos:
         
         modelo = keras.models.load_model(ruta_completa)
         return modelo
+    
+    def listar_modelos(self):
+        if not os.path.exists(self.directorio_modelos):
+            return []
+        
+        archivos = os.listdir(self.directorio_modelos)
+        modelos = [archivo for archivo in archivos if archivo.endswith(self.EXTENSION_MODELO)]
+        return sorted(modelos)
+    
+    def obtener_info_modelos(self):
+        modelos = self.listar_modelos()
+        info_modelos = []
+        
+        for modelo in modelos:
+            info = self.extraer_info_nombre(modelo)
+            info_modelos.append(info)
+        
+        return info_modelos
 

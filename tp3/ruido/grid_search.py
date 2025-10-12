@@ -5,8 +5,8 @@ import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from datetime import datetime
 
-from .configuraciones import CONFIGURACIONES_AUTOCODIFICADOR, CONFIGURACIONES_ENTRENAMIENTO
-from .entrenador_eliminador_ruido import EntrenadorEliminadorRuido
+from tp3.simbolos.configuraciones import CONFIGURACIONES_AUTOCODIFICADOR, CONFIGURACIONES_ENTRENAMIENTO
+from .entrenador import EntrenadorEliminadorRuidoRefactorizado
 
 
 TIPOS_RUIDO = ['binario', 'gaussiano', 'dropout']
@@ -23,7 +23,7 @@ def ejecutar_experimento_ruido_paralelo(args):
     inicio_tiempo = time.time()
     
     try:
-        entrenador = EntrenadorEliminadorRuido()
+        entrenador = EntrenadorEliminadorRuidoRefactorizado()
         
         modelo, historial, metricas, nombre_modelo = entrenador.entrenar_modelo_completo(
             config_modelo_nombre, config_entrenamiento_nombre, tipo_ruido, nivel_ruido

@@ -21,7 +21,8 @@ class VisualizadorResultados:
     
     def _mostrar_perdida(self, ax, historial):
         ax.plot(historial.history['loss'], label='Entrenamiento')
-        ax.plot(historial.history['val_loss'], label='Validación')
+        if 'val_loss' in historial.history:
+            ax.plot(historial.history['val_loss'], label='Validación')
         ax.set_title('Pérdida')
         ax.set_xlabel('Época')
         ax.set_ylabel('Loss')
@@ -29,8 +30,10 @@ class VisualizadorResultados:
         ax.grid(True, alpha=0.3)
     
     def _mostrar_mse(self, ax, historial):
-        ax.plot(historial.history['mse'], label='MSE Train')
-        ax.plot(historial.history['val_mse'], label='MSE Val')
+        if 'mse' in historial.history:
+            ax.plot(historial.history['mse'], label='MSE Train')
+        if 'val_mse' in historial.history:
+            ax.plot(historial.history['val_mse'], label='MSE Val')
         ax.set_title('Error Cuadrático Medio')
         ax.set_xlabel('Época')
         ax.set_ylabel('MSE')

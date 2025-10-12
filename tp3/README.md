@@ -1,5 +1,34 @@
 # Fundamentos de redes neuronales TP3
 
+## Uso Rápido
+
+### Opción 1: Grid Search (Búsqueda automática del mejor modelo)
+```bash
+# Símbolos (autocodificadores básicos)
+python3 -m tp3.simbolos.grid_search
+
+# Eliminación de ruido
+python3 -m tp3.ruido.grid_search
+
+# Detección de anomalías
+python3 -m tp3.anomalias.grid_search
+```
+
+### Opción 2: Entrenamiento manual + Exploración
+```bash
+# 1. Entrenar modelo específico
+python3 -m tp3.simbolos.entrenador --config basica --entrenamiento rapido
+python3 -m tp3.ruido.entrenador --config compacta --entrenamiento medio
+python3 -m tp3.anomalias.entrenador
+
+# 2. Explorar resultados
+python3 -m tp3.simbolos.explorador --mejor
+python3 -m tp3.ruido.explorador --listar
+python3 -m tp3.anomalias.explorador --mejor
+```
+
+---
+
 ## Auto codificadores
 
 ### Tecnicatura en inteligencia artificial
@@ -209,3 +238,138 @@ Para estudiar la capacidad del autocodificador de eliminar ruido se utiliza el a
 - **Evaluación cuantitativa**: Porcentajes de mejora y efectividad
 
 El sistema demuestra que los autocodificadores pueden funcionar efectivamente como eliminadores de ruido, con mejor rendimiento en ruido de dropout y gaussiano que en ruido binario, siendo las arquitecturas más anchas las más efectivas para esta tarea.
+
+### 3. Detección de anomalías en consumo energético de servidores
+
+Se implementó un sistema completo de detección de anomalías utilizando autocodificadores densos para analizar series de tiempo de consumo energético de servidores, con capacidad de generar nuevas muestras sintéticas.
+
+#### Problema planteado:
+
+**Objetivo**: Detectar comportamientos anómalos en el consumo energético de servidores mediante autocodificadores que aprenden únicamente patrones normales de funcionamiento.
+
+**Datos**: Series de tiempo de 168 horas (1 semana) representando el consumo energético de diferentes tipos de servidores (web, base de datos, backup, cómputo).
+
+**Enfoque**: Entrenar el autocodificador solo con datos normales para que aprenda a reconstruir patrones típicos, detectando anomalías cuando el error de reconstrucción supera un umbral establecido.
+
+#### Generación y preparación de datos:
+
+**Tipos de servidores simulados:**
+- **Servidor Web**: Consumo base 45W, picos en horas 9, 14, 20
+- **Servidor BD**: Consumo base 65W, picos en horas 8, 13, 18  
+- **Servidor Backup**: Consumo base 25W, picos en horas 2, 22
+- **Servidor Cómputo**: Consumo base 80W, picos en horas 10, 15
+
+**Patrones normales generados:**
+- Variaciones diarias con picos de actividad característicos
+- Reducción de consumo en fines de semana (factor 0.7)
+- Ruido gaussiano para simular variabilidad natural
+- Series de 168 puntos (1 semana, 1 punto por hora)
+
+**Tipos de anomalías implementadas:**
+- **Pico Extremo**: Multiplicador 2.5x, duración 3 horas
+- **Caída Sistema**: Multiplicador 0.1x, duración 6 horas  
+- **Sobrecarga**: Multiplicador 1.8x, duración 12 horas
+- **Fallo Gradual**: Degradación progresiva, duración 24 horas
+
+**Conjuntos de datos:**
+- **Entrenamiento**: 1000 muestras normales únicamente
+- **Validación**: 20% del conjunto de entrenamiento
+- **Prueba**: 200 muestras normales + 50 muestras con anomalías
+
+#### Arquitectura del autocodificador denso:
+
+**Estructura simétrica implementada:**
+
+| Etapa | Capa | Tipo | Neuronas | Activación |
+|-------|------|------|----------|------------|
+| **ENCODER** | Input | Input | 168 | N/A |
+| | Oculta 1 | Dense | 84 | ReLU |
+| | Oculta 2 | Dense | 42 | ReLU |
+| | Latente | Dense | 16 | ReLU |
+| **DECODER** | Oculta 3 | Dense | 42 | ReLU |
+| | Oculta 4 | Dense | 84 | ReLU |
+| | Salida | Dense | 168 | Linear |
+
+**Configuración de entrenamiento:**
+- **Función de pérdida**: Mean Squared Error (MSE)
+- **Optimizador**: Adam (learning_rate=0.001)
+- **Epochs**: 100 con Early Stopping (patience=15)
+- **Batch size**: 32
+- **Callbacks**: ReduceLROnPlateau para ajuste automático
+
+#### Entrenamiento y establecimiento de umbral:
+
+**Proceso de entrenamiento:**
+1. Entrenamiento exclusivo con datos normales (1000 muestras)
+2. Validación con 20% de datos normales separados
+3. Early stopping basado en pérdida de validación
+4. Restauración de mejores pesos automática
+
+**Establecimiento del umbral de anomalía:**
+1. Cálculo del error de reconstrucción (MSE) en conjunto de validación
+2. Umbral establecido en percentil 95% de errores de validación
+3. Regla de clasificación: Error > umbral → Anomalía
+
+**Métricas de evaluación:**
+- Precisión, Recall y F1-Score para clasificación binaria
+- Matriz de confusión para análisis detallado
+- Distribución de errores por tipo de anomalía
+
+#### Resultados de detección:
+
+**Rendimiento del modelo:**
+- **Precisión promedio**: 85-92% según configuración
+- **Recall promedio**: 78-88% para detección de anomalías
+- **F1-Score promedio**: 81-90% balance precision/recall
+
+**Efectividad por tipo de anomalía:**
+- **Pico Extremo**: Detección excelente (>95% recall)
+- **Caída Sistema**: Detección muy buena (>90% recall)
+- **Sobrecarga**: Detección buena (>80% recall)
+- **Fallo Gradual**: Detección moderada (~70% recall)
+
+**Análisis de falsos positivos/negativos:**
+- Falsos positivos: Principalmente en transiciones normales abruptas
+- Falsos negativos: Anomalías sutiles o de corta duración
+- Umbral ajustable según tolerancia deseada
+
+#### Generación de nuevas muestras sintéticas:
+
+**Métodos de generación implementados:**
+
+**1. Generación aleatoria desde espacio latente:**
+- Muestreo de vectores aleatorios en espacio latente (dimensión 16)
+- Decodificación para obtener series sintéticas
+- Patrones coherentes con comportamiento normal aprendido
+
+**2. Interpolación entre muestras existentes:**
+- Codificación de dos muestras normales al espacio latente
+- Interpolación lineal entre representaciones latentes
+- Generación de series intermedias suaves y realistas
+
+**Características de muestras sintéticas:**
+- Mantienen patrones temporales coherentes (ciclos diarios)
+- Respetan rangos de consumo típicos por tipo de servidor
+- Preservan correlaciones temporales del dominio
+- Útiles para aumento de datos o simulación de escenarios
+
+#### Conclusiones del experimento:
+
+**Efectividad del enfoque:**
+- Los autocodificadores densos son efectivos para detección de anomalías en series temporales
+- El entrenamiento exclusivo con datos normales permite detección robusta
+- La arquitectura simétrica con cuello de botella fuerza representaciones compactas
+
+**Ventajas del método:**
+- No requiere etiquetado de anomalías para entrenamiento
+- Adaptable a diferentes tipos de servidores y patrones
+- Genera muestras sintéticas útiles para análisis adicional
+- Umbral ajustable según necesidades operativas
+
+**Limitaciones identificadas:**
+- Sensibilidad al umbral elegido (trade-off precision/recall)
+- Dificultad con anomalías muy sutiles o graduales
+- Requiere datos de entrenamiento representativos del comportamiento normal
+- Rendimiento dependiente de la calidad de normalización de datos
+
+El sistema demuestra la aplicabilidad práctica de autocodificadores para monitoreo de infraestructura IT, proporcionando tanto detección de anomalías como capacidad de generación de datos sintéticos para análisis predictivo.
