@@ -1,0 +1,7 @@
+nombre_modelo,experimento,config_modelo,config_entrenamiento,dimension_latente,capas_encoder,capas_decoder,learning_rate,epochs_config,epochs_ejecutadas,loss_final,mse_final,precision_final,tiempo_entrenamiento,convergencia,exito,error
+tp3_lat2_ep1500_lr0_001,1,simple_2d,exhaustivo,2,"[20, 10]","[10, 20]",0.001,1500,1500,0.048277,0.012825,0.9857,18.19,False,True,
+tp3_lat2_ep1500_lr0_001,2,profundo_2d,exhaustivo,2,"[30, 25, 15]","[15, 25, 30]",0.001,1500,1500,0.000633,1e-05,1.0,18.36,False,True,
+tp3_lat2_ep1500_lr0_001,3,minimo_2d,exhaustivo,2,[12],[12],0.001,1500,1500,0.125834,0.03797,0.9464,17.88,False,True,
+tp3_lat2_ep1500_lr0_001,4,ultra_profundo_2d,exhaustivo,2,"[32, 28, 24, 20, 16, 12, 8]","[8, 12, 16, 20, 24, 28, 32]",0.001,1500,1500,0.023043,0.006533,0.9902,19.34,False,True,
+tp3_lat2_ep1500_lr0_001,5,ultra_ancho_2d,exhaustivo,2,"[64, 32]","[32, 64]",0.001,1500,1500,0.000951,5.5e-05,1.0,17.03,False,True,
+tp3_lat2_ep1500_lr0_001,6,tanh_2d,exhaustivo,2,"[25, 15]","[15, 25]",0.001,1500,1500,0.100481,0.023463,0.9768,16.99,False,True,

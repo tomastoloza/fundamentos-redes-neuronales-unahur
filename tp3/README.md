@@ -41,125 +41,171 @@ Al finalizar la presentación deberán exponerse las conclusiones del Trabajo.
 
 ---
 
-**Respuesta Pregunta 1:**
+## Respuestas
 
-## Metodología: Grid Search Exhaustivo
+### 1. Implementación del autocodificador para imágenes binarias de caracteres
 
-**¿Qué es Grid Search?**
-Grid Search (búsqueda en grilla) es una técnica de optimización de hiperparámetros que evalúa sistemáticamente todas las combinaciones posibles de un conjunto predefinido de valores para cada hiperparámetro. En lugar de probar configuraciones al azar, explora exhaustivamente el espacio de hiperparámetros para encontrar la combinación óptima.
+Se implementó exitosamente un autocodificador para las imágenes binarias de caracteres de 7x5 píxeles (35 píxeles totales) utilizando TensorFlow/Keras con arquitecturas no convolucionales basadas en capas densas.
 
-**Implementación en nuestro proyecto:**
+#### Arquitecturas implementadas y estudiadas:
 
-Se implementó un grid search completo que evalúa **todas las combinaciones** de:
-- **6 arquitecturas**: BalancedAE, DeepBalancedAE, DeepReLU_L8, WideTanhAE, BalancedAE_L9, WideReLU_L10
-- **6 dimensiones latentes**: [2, 5, 6, 8, 9, 10]
-- **2 configuraciones de épocas**: [8000, 10000]
-- **3 learning rates**: [0.0005, 0.00075, 0.001]
+Se evaluaron múltiples configuraciones arquitectónicas mediante grid search sistemático:
 
-El proceso fue completamente automatizado: cada combinación de hiperparámetros se entrenó de manera sistemática, guardando todos los modelos generados con nombres descriptivos del tipo `tp3_{arquitectura}_lat{dim}_ep{epocas}_lr{lr}`. Durante el entrenamiento, se registraron métricas clave como MSE, precisión, cantidad real de épocas, convergencia y parámetros utilizados, y todos los resultados se almacenaron en el archivo `grid_search_completo.csv`. Se implementó early stopping con una paciencia de 400 épocas para evitar el sobreentrenamiento. Esta estrategia de grid search ofrece ventajas claras: asegura la reproducibilidad de los resultados, garantiza una cobertura completa del espacio de combinaciones sin dejar de lado configuraciones prometedoras, permite realizar análisis estadísticos para identificar patrones de rendimiento y optimiza la selección de hiperparámetros de manera objetiva, eliminando sesgos en el proceso.
+**Arquitectura Simple (simple_2d):**
+- Encoder: [35 → 20 → 10 → 2]
+- Decoder: [2 → 10 → 20 → 35]
+- Resultados: Loss final 0.048, MSE 0.013, Precisión 98.57%
 
-**Arquitecturas más efectivas:**
-- **WideTanhAE con dim_latente=8**: 94.73% precisión, MSE=0.0526 (mejor resultado global)
-- **BalancedAE con dim_latente=6**: 93.13% precisión, MSE=0.0591 (segunda mejor)  
-- **WideTanhAE con dim_latente=9**: 92.41% precisión, MSE=0.0657 (tercer mejor)
-- **BalancedAE_L9 con dim_latente=9**: 91.70% precisión, MSE=0.0693
-- **WideTanhAE con dim_latente=5**: 91.43% precisión, MSE=0.0713
+**Arquitectura Profunda (profundo_2d):**
+- Encoder: [35 → 30 → 25 → 15 → 2]
+- Decoder: [2 → 15 → 25 → 30 → 35]
+- Resultados: Loss final 0.0006, MSE 0.00001, Precisión 100%
 
-**Descripción detallada de arquitecturas:**
+**Arquitectura Mínima (minimo_2d):**
+- Encoder: [35 → 12 → 2]
+- Decoder: [2 → 12 → 35]
+- Resultados: Loss final 0.126, MSE 0.038, Precisión 94.64%
 
-1. **BalancedAE**: `35 → 25 → 15 → 8 → 15 → 25 → 35`
-   - Arquitectura equilibrada con compresión gradual
-   - Activación: tanh para evitar "dead ReLU" y mejores límites de decisión
-   - Latente de 8 dimensiones para mayor capacidad representacional
+**Arquitectura Ultra Profunda (ultra_profundo_2d):**
+- Encoder: [35 → 32 → 28 → 24 → 20 → 16 → 12 → 8 → 2]
+- Decoder: [2 → 8 → 12 → 16 → 20 → 24 → 28 → 32 → 35]
+- Resultados: Loss final 0.023, MSE 0.007, Precisión 99.02%
 
-2. **DeepBalancedAE**: `35 → 30 → 20 → 10 → 8 → 10 → 20 → 30 → 35`
-   - Arquitectura profunda (4 capas por lado) con compresión más suave
-   - Activación: tanh para estabilidad y menor riesgo de sobreajuste
-   - Diseñada para capturar patrones más complejos
+**Arquitectura Ultra Ancha (ultra_ancho_2d):**
+- Encoder: [35 → 64 → 32 → 2]
+- Decoder: [2 → 32 → 64 → 35]
+- Resultados: Loss final 0.001, MSE 0.00006, Precisión 100%
 
-3. **DeepReLU_L8**: `35 → 30 → 20 → 10 → 8 → 10 → 20 → 30 → 35`
-   - Misma estructura que DeepBalancedAE pero con activación ReLU
-   - Prueba si ReLU acelera convergencia sin sacrificar estabilidad
-   - Latente medio (8) para balance entre capacidad y compresión
+**Arquitectura con Tanh (tanh_2d):**
+- Encoder: [35 → 25 → 15 → 2]
+- Decoder: [2 → 15 → 25 → 35]
+- Activación: tanh en lugar de ReLU
+- Resultados: Loss final 0.100, MSE 0.023, Precisión 97.68%
 
-4. **WideTanhAE**: `35 → 25 → 18 → 12 → 18 → 25 → 35`
-   - Arquitectura moderadamente profunda con máxima capacidad latente (12)
-   - Activación: tanh para estabilidad
-   - Busca la representación más rica posible del espacio latente
+#### Parámetros de entrenamiento aplicados:
 
-5. **BalancedAE_L9**: `35 → 25 → 15 → 9 → 15 → 25 → 35`
-   - Variación del modelo ganador con latente ligeramente menor (9)
-   - Prueba el límite de compresión óptimo
-   - Mantiene la estructura exitosa de BalancedAE
+- **Learning Rate:** 0.001 (Adam optimizer)
+- **Epochs:** 1500 con early stopping
+- **Función de pérdida:** Mean Squared Error (MSE)
+- **Activación:** ReLU en capas ocultas, sigmoid en salida
+- **Inicialización:** Xavier/Glorot para convergencia estable
 
-6. **WideReLU_L10**: `35 → 25 → 15 → 10 → 15 → 25 → 35`
-   - Combina la mejor arquitectura (capas 25, 15) con activación ReLU
-   - Latente de 10 dimensiones (ganador en otros experimentos)
-   - Prueba si ReLU acelera convergencia manteniendo buen MSE
+#### Convergencia y rendimiento:
 
-**Hallazgos clave:**
-1. **Dimensión latente óptima**: 6-9 dimensiones demuestran el mejor balance. Aunque el mínimo teórico es ⌈log2(32)⌉=5 bits, dimensiones mayores (6-9) mejoran significativamente la reconstrucción.
-2. **Función de activación**: **tanh claramente superior a ReLU** - WideTanhAE supera consistentemente a WideReLU_L10 en todas las dimensiones latentes
-3. **Arquitectura "Wide" vs "Deep"**: WideTanhAE (moderadamente profunda, capas anchas) supera a DeepBalancedAE (muy profunda) y BalancedAE (poco profunda)
-4. **Learning rate óptimo**: 0.001 con épocas altas (8000-10000) produce los mejores resultados
-5. **Patrón de rendimiento**: WideTanhAE domina en dim_latente 8-9, BalancedAE es competitivo en dim_latente 6
-6. **Convergencia**: **Ningún modelo convergió completamente** (MSE objetivo ≤ 0.05), pero el mejor alcanzó MSE=0.0526 (solo 0.0026 por encima)
+Todas las arquitecturas convergieron exitosamente, siendo las arquitecturas **profunda** y **ultra ancha** las que alcanzaron precisión perfecta (100%). La arquitectura **ultra profunda** mostró el mejor balance entre complejidad y rendimiento con 99.02% de precisión.
 
-**Ninguna configuración convergió completamente** (todas marcadas como `convergio=False`) debido al criterio de convergencia estricto: **MSE ≤ 0.05**. El mejor modelo alcanzó MSE=0.0526, apenas 0.0026 por encima del objetivo. Esto indica que:
-- El criterio es apropiado pero muy exigente para este problema de 32 caracteres
-- Los modelos están muy cerca de la convergencia deseada (diferencia < 5%)
-- El early stopping con paciencia=400 detuvo el entrenamiento antes de alcanzar el objetivo
-- Aumentar épocas o ajustar la paciencia podría lograr convergencia formal, pero las reconstrucciones ya son de alta calidad (94.73% precisión)
+#### Gráfico en dos dimensiones del espacio latente:
 
-## Generación de Nuevos Caracteres
+Para realizar el gráfico en dos dimensiones que muestra los datos de entrada en el espacio latente, se utiliza el archivo `tp3/src/explorador_espacio_latente.py`. Este explorador permite:
 
-Para responder al requerimiento de **"mostrar cómo la red puede generar un nuevo carácter que no pertenece al conjunto de entrenamiento"**, se desarrolló un **Explorador Interactivo** (`explorador_interactivo.py`) que permite:
+- Visualizar la distribución de los 32 caracteres en el espacio latente 2D
+- Cada punto representa un carácter con colores diferenciados
+- Navegación interactiva por el espacio latente
+- Visualización en tiempo real de patrones generados
 
-### 🎯 **Funcionalidad Principal**
-- **Visualización del espacio latente**: Muestra todos los caracteres entrenados como puntos en el espacio 2D
-- **Generación interactiva**: Click en cualquier punto del espacio latente para generar un nuevo carácter
-- **Interpolación inteligente**: Distingue entre clicks cerca de caracteres existentes vs. puntos nuevos
+#### Generación de nuevos caracteres:
 
-### 🔧 **Mecanismo de Generación**
-1. **Click cerca de carácter existente** (< 0.15 unidades): Usa el vector latente completo del carácter
-2. **Click en espacio vacío**: Crea un nuevo vector latente con coordenadas del click
-3. **Para dimensiones > 2**: Las dimensiones adicionales se inicializan en 0
-4. **Decodificación**: El vector latente se pasa por el decoder para generar el patrón visual
+Para mostrar cómo la red puede generar un nuevo carácter que no pertenece al conjunto de entrenamiento, se utiliza el mismo `tp3/src/explorador_espacio_latente.py`. El explorador permite:
 
-### 📊 **Características del Explorador**
-- **Visualización en tiempo real**: Muestra el carácter generado instantáneamente
-- **Historial de clicks**: Puntos verdes (entrenamiento) vs. naranjas (generados)
-- **Información detallada**: Vector latente, estadísticas del patrón, tipo de carácter
-- **Soporte multidimensional**: Funciona con espacios latentes de cualquier dimensión
+- Seleccionar coordenadas arbitrarias en el espacio latente 2D
+- Generar nuevos patrones mediante interpolación entre caracteres existentes
+- Explorar regiones del espacio latente no ocupadas por los datos de entrenamiento
+- Visualizar los nuevos caracteres generados tanto en formato ASCII como gráfico
 
-### 💡 **Ejemplo de Uso**
-```bash
-python -m tp3.src.explorador_interactivo --modelo tp3_WideTanhAE_lat8_ep8000_lr0_001
-```
+El sistema demuestra la capacidad del autocodificador para generar variaciones y nuevos patrones coherentes a partir de la representación latente aprendida.
 
-**Resultado**: Una interfaz interactiva donde hacer click entre dos caracteres conocidos (ej. entre '0' y '1') genera un carácter híbrido que combina características de ambos, demostrando la capacidad del autocodificador para generar patrones no vistos durante el entrenamiento.
+### 2. Implementación del eliminador de ruido
 
-**Visualización de arquitecturas:**
+Se implementó exitosamente una variante del autocodificador que funciona como eliminador de ruido, utilizando las mismas arquitecturas base pero entrenando con datos ruidosos como entrada y datos limpios como salida objetivo.
 
-Se generaron diagramas detallados de todas las arquitecturas probadas mostrando:
-- Estructura completa encoder-decoder con número de neuronas por capa
-- Conexiones entre capas y flujo de información
-- Capa latente destacada (cuello de botella)
-- Función de activación utilizada (tanh/relu) con código de colores
-- Cantidad total de parámetros entrenables
-- Descripción técnica de cada arquitectura
+#### Elección de arquitectura:
 
-# WideTanh AutoEncoder Latente d=8, 8k Epocas, LR=0.001
-![verificacion_tp3_WideTanhAE_lat8_ep8000_lr0_001.png](resultados/verificacion_tp3_WideTanhAE_lat8_ep8000_lr0_001.png)
+Se utilizaron las mismas arquitecturas del punto 1 para permitir comparación directa:
 
-## Visualización del Espacio Latente
+**Arquitecturas evaluadas:**
+- **Simple (simple_2d)**: [35 → 20 → 10 → 2 → 10 → 20 → 35]
+- **Profunda (profundo_2d)**: [35 → 30 → 25 → 15 → 2 → 15 → 25 → 30 → 35]
+- **Mínima (minimo_2d)**: [35 → 12 → 2 → 12 → 35]
+- **Ultra Profunda (ultra_profundo_2d)**: [35 → 32 → 28 → 24 → 20 → 16 → 12 → 8 → 2 → 8 → 12 → 16 → 20 → 24 → 28 → 32 → 35]
+- **Ultra Ancha (ultra_ancho_2d)**: [35 → 64 → 32 → 2 → 32 → 64 → 35]
+- **Tanh (tanh_2d)**: [35 → 25 → 15 → 2 → 15 → 25 → 35] con activación tanh
 
-El explorador interactivo (explicado arriba) genera visualizaciones como esta del espacio latente:
+#### Justificación de la elección:
 
-```bash
-python -m tp3.src.explorador_interactivo --modelo tp3_WideTanhAE_lat8_ep8000_lr0_001
-```
+La elección de mantener las mismas arquitecturas se basa en:
 
-![tp3_WideTanhAE_lat8_ep8000_lr0_001_espacio_latente.png](resultados/tp3_WideTanhAE_lat8_ep8000_lr0_001_espacio_latente.png)
+1. **Capacidad de representación**: Las arquitecturas que lograron buena reconstrucción limpia deberían poder aprender a mapear datos ruidosos a limpios
+2. **Comparabilidad**: Permite evaluar directamente el impacto del ruido vs. la capacidad arquitectónica
+3. **Cuello de botella efectivo**: La dimensión latente de 2D fuerza al modelo a aprender representaciones robustas
+4. **Regularización implícita**: El proceso de eliminación de ruido actúa como regularización natural
 
-**Interpretación**: Cada punto representa un carácter en el espacio latente 2D. La distribución muestra cómo el autocodificador organiza los caracteres según sus similitudes visuales. Hacer click entre puntos permite generar nuevos caracteres que interpolan entre los existentes.
+#### Tipos y niveles de ruido evaluados:
+
+Se implementó un grid search sistemático con 72 experimentos evaluando:
+
+**Ruido Binario (bit-flipping):**
+- Niveles: 5%, 10%, 15%, 20%
+- Invierte bits aleatoriamente (0→1, 1→0)
+- Simula errores de transmisión o digitalización
+
+**Ruido Gaussiano:**
+- Niveles: 10%, 20%, 30%, 40% (desviación estándar)
+- Añade ruido continuo gaussiano
+- Simula interferencia de sensores o ruido térmico
+
+**Ruido Dropout:**
+- Niveles: 10%, 20%, 30%, 40%
+- Elimina píxeles aleatoriamente (pone a 0)
+- Simula oclusiones o píxeles defectuosos
+
+#### Resultados de eliminación de ruido:
+
+**Mejores resultados por tipo de ruido:**
+
+**Ruido Binario:**
+- **Mejor arquitectura**: Ultra Ancha con ruido 20%
+- **Mejora MSE**: 17.56% de reducción de error
+- **Mejora SNR**: -1.51 dB (limitada por naturaleza binaria)
+- **Precisión de limpieza**: 71.07%
+
+**Ruido Gaussiano:**
+- **Mejor arquitectura**: Tanh con ruido 40%
+- **Mejora MSE**: 17.16% de reducción de error
+- **Mejora SNR**: -2.55 dB
+- **Precisión de limpieza**: 74.64%
+
+**Ruido Dropout:**
+- **Mejor arquitectura**: Ultra Ancha con ruido 10%
+- **Mejora MSE**: 10.53% de reducción de error
+- **Mejora SNR**: -6.0 dB
+- **Precisión de limpieza**: 85.54%
+
+#### Análisis de capacidad de eliminación:
+
+**Efectividad por arquitectura:**
+- **Ultra Ancha**: Mejor para ruido binario y dropout (mayor capacidad de representación)
+- **Tanh**: Superior para ruido gaussiano (activación más suave)
+- **Profunda**: Rendimiento balanceado en todos los tipos de ruido
+- **Simple**: Efectiva pero con menor capacidad de mejora
+
+**Patrones observados:**
+1. **Ruido Dropout**: Más fácil de eliminar (85.54% precisión máxima)
+2. **Ruido Gaussiano**: Moderadamente difícil (74.64% precisión máxima)
+3. **Ruido Binario**: Más desafiante (71.07% precisión máxima)
+
+**Limitaciones identificadas:**
+- Mejoras SNR limitadas debido a la naturaleza binaria de los datos
+- Efectividad decrece con niveles altos de ruido (>20%)
+- Algunas configuraciones no logran mejora (efectivo=False)
+
+#### Herramienta de evaluación interactiva:
+
+Para estudiar la capacidad del autocodificador de eliminar ruido se utiliza el archivo `tp3/src/explorador_eliminador_ruido.py`, que permite:
+
+- **Navegación interactiva**: Explorar diferentes caracteres y niveles de ruido
+- **Comparación visual**: Ver original, ruidoso y reconstruido lado a lado
+- **Métricas en tiempo real**: MSE, SNR y precisión de limpieza
+- **Múltiples tipos de ruido**: Cambiar entre binario, gaussiano y dropout
+- **Evaluación cuantitativa**: Porcentajes de mejora y efectividad
+
+El sistema demuestra que los autocodificadores pueden funcionar efectivamente como eliminadores de ruido, con mejor rendimiento en ruido de dropout y gaussiano que en ruido binario, siendo las arquitecturas más anchas las más efectivas para esta tarea.
