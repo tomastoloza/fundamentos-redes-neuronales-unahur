@@ -61,17 +61,17 @@ CONFIGURACIONES_AUTOCODIFICADOR = {
 }
 
 CONFIGURACIONES_ENTRENAMIENTO = {
-    'rapido': {
-        'epochs': 300,
-        'patience': 100,
-        'validation_split': 0.15
-    },
-    
-    'normal': {
-        'epochs': 800,
-        'patience': 100,
-        'validation_split': 0.15
-    },
+    # 'rapido': {
+    #     'epochs': 300,
+    #     'patience': 100,
+    #     'validation_split': 0.15
+    # },
+    #
+    # 'normal': {
+    #     'epochs': 800,
+    #     'patience': 100,
+    #     'validation_split': 0.15
+    # },
     
     'exhaustivo': {
         'epochs': 1500,

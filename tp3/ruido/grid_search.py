@@ -9,21 +9,24 @@ from tp3.simbolos.configuraciones import CONFIGURACIONES_AUTOCODIFICADOR, CONFIG
 from .entrenador import EntrenadorEliminadorRuidoRefactorizado
 
 
-TIPOS_RUIDO = ['binario', 'gaussiano', 'dropout']
+TIPOS_RUIDO = ['binario'
+    # , 'gaussiano', 'dropout'
+               ]
 NIVELES_RUIDO = {
-    'binario': [0.05, 0.10, 0.15, 0.20],
-    'gaussiano': [0.1, 0.2, 0.3, 0.4],
-    'dropout': [0.10, 0.20, 0.30, 0.40]
+    'binario': [0.05, 0.10],
+    # 'gaussiano': [0.1, 0.2],
+    # 'dropout': [0.10, 0.20]
 }
+NUM_VERSIONES_RUIDO_DEFAULT = 10
 
 
 def ejecutar_experimento_ruido_paralelo(args):
-    experimento, config_modelo_nombre, config_entrenamiento_nombre, tipo_ruido, nivel_ruido = args
+    experimento, config_modelo_nombre, config_entrenamiento_nombre, tipo_ruido, nivel_ruido, num_versiones = args
     
     inicio_tiempo = time.time()
     
     try:
-        entrenador = EntrenadorEliminadorRuidoRefactorizado()
+        entrenador = EntrenadorEliminadorRuidoRefactorizado(num_versiones_ruido=num_versiones)
         
         modelo, historial, metricas, nombre_modelo = entrenador.entrenar_modelo_completo(
             config_modelo_nombre, config_entrenamiento_nombre, tipo_ruido, nivel_ruido
@@ -43,6 +46,7 @@ def ejecutar_experimento_ruido_paralelo(args):
             'config_entrenamiento': config_entrenamiento_nombre,
             'tipo_ruido': tipo_ruido,
             'nivel_ruido': nivel_ruido,
+            'num_versiones_ruido': num_versiones,
             'dimension_latente': config_modelo['dimension_latente'],
             'capas_encoder': str(config_modelo['capas_encoder']),
             'capas_decoder': str(config_modelo['capas_decoder']),
@@ -65,12 +69,13 @@ def ejecutar_experimento_ruido_paralelo(args):
     except Exception as e:
         tiempo_entrenamiento = time.time() - inicio_tiempo
         return {
-            'nombre_modelo': f"{config_modelo_nombre}_{config_entrenamiento_nombre}_{tipo_ruido}_{nivel_ruido}",
+            'nombre_modelo': f"{config_modelo_nombre}_{config_entrenamiento_nombre}_{tipo_ruido}_{nivel_ruido}_x{num_versiones}",
             'experimento': experimento,
             'config_modelo': config_modelo_nombre,
             'config_entrenamiento': config_entrenamiento_nombre,
             'tipo_ruido': tipo_ruido,
             'nivel_ruido': nivel_ruido,
+            'num_versiones_ruido': num_versiones,
             'tiempo_entrenamiento': round(tiempo_entrenamiento, 2),
             'error': str(e),
             'exito': False
@@ -85,7 +90,7 @@ class GridSearchEliminadorRuido:
         if not os.path.exists(self.directorio_resultados):
             os.makedirs(self.directorio_resultados)
     
-    def ejecutar_grid_search_ruido(self):
+    def ejecutar_grid_search_ruido(self, num_versiones_ruido=NUM_VERSIONES_RUIDO_DEFAULT):
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         archivo_csv = os.path.join(self.directorio_resultados, f"grid_search_ruido_{timestamp}.csv")
         
@@ -100,17 +105,10 @@ class GridSearchEliminadorRuido:
             configuraciones_modelo, configuraciones_entrenamiento, TIPOS_RUIDO
         ):
             for nivel_ruido in NIVELES_RUIDO[tipo_ruido]:
-                experimentos.append((experimento, config_modelo, config_entrenamiento, tipo_ruido, nivel_ruido))
+                experimentos.append((experimento, config_modelo, config_entrenamiento, tipo_ruido, nivel_ruido, num_versiones_ruido))
                 experimento += 1
         
         total_experimentos = len(experimentos)
-        print(f"=== GRID SEARCH ELIMINADOR DE RUIDO ===")
-        print(f"Configuraciones 2D: {len(configuraciones_modelo)}")
-        print(f"Tipos de ruido: {len(TIPOS_RUIDO)}")
-        print(f"Total experimentos: {total_experimentos}")
-        print(f"Workers: {self.max_workers or 'auto'}")
-        print(f"Archivo resultados: {archivo_csv}")
-        print()
         
         resultados = []
         completados = 0
@@ -120,7 +118,7 @@ class GridSearchEliminadorRuido:
             
             for future in as_completed(futures):
                 exp_args = futures[future]
-                experimento_num, config_modelo, config_entrenamiento, tipo_ruido, nivel_ruido = exp_args
+                experimento_num, config_modelo, config_entrenamiento, tipo_ruido, nivel_ruido, num_versiones = exp_args
                 
                 try:
                     resultado = future.result()
@@ -128,17 +126,17 @@ class GridSearchEliminadorRuido:
                     completados += 1
                     
                     if resultado['exito']:
-                        print(f"✓ [{completados}/{total_experimentos}] {config_modelo}+{tipo_ruido}({nivel_ruido}): "
+                        print(f"✓ [{completados}/{total_experimentos}] {config_modelo}+{tipo_ruido}({nivel_ruido})x{num_versiones}: "
                               f"MSE_limpio={resultado['mse_limpio']:.6f}, "
                               f"Mejora_SNR={resultado['mejora_snr']:.1f}dB, "
                               f"Efectivo={resultado['efectivo']}, "
                               f"Tiempo={resultado['tiempo_entrenamiento']:.1f}s")
                     else:
-                        print(f"✗ [{completados}/{total_experimentos}] {config_modelo}+{tipo_ruido}({nivel_ruido}): "
+                        print(f"✗ [{completados}/{total_experimentos}] {config_modelo}+{tipo_ruido}({nivel_ruido})x{num_versiones}: "
                               f"Error - {resultado.get('error', 'Desconocido')}")
                         
                 except Exception as e:
-                    print(f"✗ [{completados}/{total_experimentos}] {config_modelo}+{tipo_ruido}({nivel_ruido}): "
+                    print(f"✗ [{completados}/{total_experimentos}] {config_modelo}+{tipo_ruido}({nivel_ruido})x{num_versiones}: "
                           f"Error crítico - {e}")
                     completados += 1
         
@@ -147,8 +145,8 @@ class GridSearchEliminadorRuido:
         with open(archivo_csv, 'w', newline='') as csvfile:
             fieldnames = [
                 'nombre_modelo', 'experimento', 'config_modelo', 'config_entrenamiento',
-                'tipo_ruido', 'nivel_ruido', 'dimension_latente', 'capas_encoder', 'capas_decoder',
-                'learning_rate', 'epochs_config', 'epochs_ejecutadas',
+                'tipo_ruido', 'nivel_ruido', 'num_versiones_ruido', 'dimension_latente', 
+                'capas_encoder', 'capas_decoder', 'learning_rate', 'epochs_config', 'epochs_ejecutadas',
                 'mse_limpio', 'mse_ruidoso', 'precision_limpieza', 'mejora_snr', 
                 'mejora_mse_porcentaje', 'efectivo', 'tiempo_entrenamiento', 'convergencia', 
                 'exito', 'error'
@@ -169,7 +167,7 @@ def main():
     
     max_workers = min(3, multiprocessing.cpu_count())
     grid_search = GridSearchEliminadorRuido(max_workers=max_workers)
-    archivo_resultados = grid_search.ejecutar_grid_search_ruido()
+    archivo_resultados = grid_search.ejecutar_grid_search_ruido(num_versiones_ruido=10)
     print(f"\nResultados disponibles en: {archivo_resultados}")
 
 

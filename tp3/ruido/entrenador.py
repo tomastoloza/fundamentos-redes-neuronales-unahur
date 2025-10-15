@@ -7,17 +7,18 @@ from tp3.simbolos.configuraciones import CONFIGURACIONES_AUTOCODIFICADOR, CONFIG
 
 
 class EntrenadorEliminadorRuidoRefactorizado(EntrenadorBase):
-    def __init__(self, conjunto_datos=1):
+    def __init__(self, conjunto_datos=1, num_versiones_ruido=10):
         super().__init__(conjunto_datos)
         self.generador_ruido = GeneradorRuido()
         self.datos_limpios = self.datos
+        self.num_versiones_ruido = num_versiones_ruido
     
     def entrenar_modelo(self, config_modelo, config_entrenamiento, tipo_ruido, nivel_ruido, **kwargs):
         if not self.validar_datos():
             return None, None, None, None
         
-        datos_ruidosos = self.generador_ruido.generar_conjunto_ruidoso(
-            self.datos_limpios, tipo_ruido, nivel_ruido
+        datos_ruidosos, datos_limpios_expandidos = self.generador_ruido.generar_multiples_versiones_ruidosas(
+            self.datos_limpios, tipo_ruido, nivel_ruido, self.num_versiones_ruido
         )
         
         modelo = self.constructor.crear_autocodificador_desde_config(config_modelo)
@@ -29,7 +30,7 @@ class EntrenadorEliminadorRuidoRefactorizado(EntrenadorBase):
         callbacks = self.crear_callbacks(config_entrenamiento_modificado)
         
         historial = modelo.fit(
-            datos_ruidosos, self.datos_limpios,
+            datos_ruidosos, datos_limpios_expandidos,
             epochs=config_entrenamiento['epochs'],
             batch_size=config_modelo.get('batch_size', 32),
             verbose=0,
@@ -73,7 +74,7 @@ class EntrenadorEliminadorRuidoRefactorizado(EntrenadorBase):
     def generar_nombre_modelo(self, config_modelo, config_entrenamiento, tipo_ruido, nivel_ruido, **kwargs):
         nombre_base = self.generar_nombre_modelo_base(config_modelo, config_entrenamiento, "tp3_eliminador")
         nivel_str = str(nivel_ruido).replace('.', '_')
-        return f"{nombre_base}_{tipo_ruido}_{nivel_str}"
+        return f"{nombre_base}_{tipo_ruido}_{nivel_str}_x{self.num_versiones_ruido}"
     
     def entrenar_modelo_completo(self, config_modelo_nombre, config_entrenamiento_nombre, 
                                tipo_ruido, nivel_ruido):

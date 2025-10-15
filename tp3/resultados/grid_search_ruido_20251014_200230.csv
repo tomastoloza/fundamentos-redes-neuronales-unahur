@@ -1,0 +1,13 @@
+nombre_modelo,experimento,config_modelo,config_entrenamiento,tipo_ruido,nivel_ruido,num_versiones_ruido,dimension_latente,capas_encoder,capas_decoder,learning_rate,epochs_config,epochs_ejecutadas,mse_limpio,mse_ruidoso,precision_limpieza,mejora_snr,mejora_mse_porcentaje,efectivo,tiempo_entrenamiento,convergencia,exito,error
+tp3_eliminador_lat2_ep1500_lr0_001_binario_0_05_x10,1,simple_2d,exhaustivo,binario,0.05,10,2,"[20, 10]","[10, 20]",0.001,1500,1500,0.102089,0.129143,0.8857,-3.51,20.95,True,42.84,False,True,
+tp3_eliminador_lat2_ep1500_lr0_001_binario_0_1_x10,2,simple_2d,exhaustivo,binario,0.1,10,2,"[20, 10]","[10, 20]",0.001,1500,1500,0.185879,0.230361,0.8045,-2.54,19.31,True,42.47,False,True,
+tp3_eliminador_lat2_ep1500_lr0_001_binario_0_05_x10,3,profundo_2d,exhaustivo,binario,0.05,10,2,"[30, 25, 15]","[15, 25, 30]",0.001,1500,1500,0.044454,0.083857,0.9509,0.51,46.99,True,43.52,False,True,
+tp3_eliminador_lat2_ep1500_lr0_001_binario_0_1_x10,4,profundo_2d,exhaustivo,binario,0.1,10,2,"[30, 25, 15]","[15, 25, 30]",0.001,1500,1500,0.135684,0.192233,0.858,-1.03,29.42,True,43.04,False,True,
+tp3_eliminador_lat2_ep1500_lr0_001_binario_0_05_x10,5,minimo_2d,exhaustivo,binario,0.05,10,2,[12],[12],0.001,1500,1500,0.145774,0.169925,0.8339,-5.14,14.21,True,40.42,False,True,
+tp3_eliminador_lat2_ep1500_lr0_001_binario_0_1_x10,6,minimo_2d,exhaustivo,binario,0.1,10,2,[12],[12],0.001,1500,1500,0.165387,0.216591,0.8036,-2.07,23.64,True,40.35,False,True,
+tp3_eliminador_lat2_ep1500_lr0_001_binario_0_05_x10,7,ultra_profundo_2d,exhaustivo,binario,0.05,10,2,"[32, 28, 24, 20, 16, 12, 8]","[8, 12, 16, 20, 24, 28, 32]",0.001,1500,1500,0.054062,0.099177,0.9429,-0.04,45.49,True,49.37,False,True,
+tp3_eliminador_lat2_ep1500_lr0_001_binario_0_1_x10,8,ultra_profundo_2d,exhaustivo,binario,0.1,10,2,"[32, 28, 24, 20, 16, 12, 8]","[8, 12, 16, 20, 24, 28, 32]",0.001,1500,1500,0.084864,0.156527,0.9045,0.94,45.78,True,48.66,False,True,
+tp3_eliminador_lat2_ep1500_lr0_001_binario_0_05_x10,9,ultra_ancho_2d,exhaustivo,binario,0.05,10,2,"[64, 32]","[32, 64]",0.001,1500,1500,0.086276,0.120897,0.9062,-2.45,28.64,True,40.92,False,True,
+tp3_eliminador_lat2_ep1500_lr0_001_binario_0_1_x10,10,ultra_ancho_2d,exhaustivo,binario,0.1,10,2,"[64, 32]","[32, 64]",0.001,1500,1500,0.145114,0.20305,0.8438,-1.58,28.53,True,39.3,False,True,
+tp3_eliminador_lat2_ep1500_lr0_001_binario_0_05_x10,11,tanh_2d,exhaustivo,binario,0.05,10,2,"[25, 15]","[15, 25]",0.001,1500,1500,0.057429,0.095453,0.9375,-0.52,39.83,True,42.01,False,True,
+tp3_eliminador_lat2_ep1500_lr0_001_binario_0_1_x10,12,tanh_2d,exhaustivo,binario,0.1,10,2,"[25, 15]","[15, 25]",0.001,1500,1500,0.104487,0.157661,0.883,-0.73,33.73,True,41.86,False,True,
