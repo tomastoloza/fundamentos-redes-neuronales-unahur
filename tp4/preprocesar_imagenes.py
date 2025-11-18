@@ -6,7 +6,6 @@ def preprocesar_dataset_suricatas():
     carpeta_origen = 'tp4/datos/suricatas'
     carpeta_destino = 'tp4/datos/suricatas_200x200'
     tamaño_final = (200, 200)
-    color_relleno = (0, 0, 0)
     
     if not os.path.exists(carpeta_destino):
         os.makedirs(carpeta_destino)
@@ -15,8 +14,7 @@ def preprocesar_dataset_suricatas():
     archivos_error = 0
     
     print(f"Procesando imágenes de {carpeta_origen} a {carpeta_destino}")
-    print(f"Tamaño objetivo: {tamaño_final[0]}x{tamaño_final[1]}px")
-    print(f"Color de relleno: RGB{color_relleno}")
+    print(f"Tamaño objetivo: {tamaño_final[0]}x{tamaño_final[1]}px (redimensionado directo)")
     print("="*60)
     
     for nombre_archivo in os.listdir(carpeta_origen):
@@ -28,19 +26,11 @@ def preprocesar_dataset_suricatas():
                     if img.mode != 'RGB':
                         img = img.convert('RGB')
                     
-                    img.thumbnail(tamaño_final, Image.Resampling.LANCZOS)
-                    
-                    fondo = Image.new('RGB', tamaño_final, color_relleno)
-                    
-                    posicion = (
-                        (tamaño_final[0] - img.width) // 2,
-                        (tamaño_final[1] - img.height) // 2
-                    )
-                    
-                    fondo.paste(img, posicion)
+                    # Redimensionar directamente a 200x200 sin mantener proporción
+                    img_redimensionada = img.resize(tamaño_final, Image.Resampling.LANCZOS)
                     
                     ruta_destino = os.path.join(carpeta_destino, nombre_archivo)
-                    fondo.save(ruta_destino, quality=95)
+                    img_redimensionada.save(ruta_destino, quality=95)
                     
                     archivos_procesados += 1
                     if archivos_procesados % 20 == 0:
@@ -57,28 +47,21 @@ def preprocesar_dataset_suricatas():
     print(f"Dataset final disponible en: {carpeta_destino}")
 
 
-def redimensionar_con_padding(imagen_pil, tamaño_objetivo=(200, 200), color_relleno=(0, 0, 0)):
+def redimensionar_directo(imagen_pil, tamaño_objetivo=(200, 200)):
+    """Redimensiona la imagen directamente al tamaño objetivo sin mantener proporción."""
     if imagen_pil.mode != 'RGB':
         imagen_pil = imagen_pil.convert('RGB')
     
-    imagen_pil.thumbnail(tamaño_objetivo, Image.Resampling.LANCZOS)
+    # Redimensionar directamente sin mantener proporción de aspecto
+    imagen_redimensionada = imagen_pil.resize(tamaño_objetivo, Image.Resampling.LANCZOS)
     
-    fondo = Image.new('RGB', tamaño_objetivo, color_relleno)
-    
-    posicion = (
-        (tamaño_objetivo[0] - imagen_pil.width) // 2,
-        (tamaño_objetivo[1] - imagen_pil.height) // 2
-    )
-    
-    fondo.paste(imagen_pil, posicion)
-    
-    return fondo
+    return imagen_redimensionada
 
 
 def procesar_imagen_individual(ruta_entrada, ruta_salida, tamaño=(200, 200)):
     try:
         with Image.open(ruta_entrada) as img:
-            imagen_procesada = redimensionar_con_padding(img, tamaño)
+            imagen_procesada = redimensionar_directo(img, tamaño)
             imagen_procesada.save(ruta_salida, quality=95)
             return True
     except Exception as e:

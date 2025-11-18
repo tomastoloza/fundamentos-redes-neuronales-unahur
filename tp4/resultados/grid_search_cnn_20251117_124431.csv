@@ -1,0 +1,4 @@
+experimento,config_cnn,config_entrenamiento,config_augmentation,nombre_modelo,val_accuracy_final,val_loss_final,mejor_epoch,tiempo_entrenamiento,parametros_modelo,timestamp,error
+1,ligera_200x200,normal,ninguno,cnn_ligera_200x200_normal_20251117_124458.keras,0.4615384638309479,1.7232398986816406,23,24.08064103126526,5144744,2025-11-17 12:44:58,
+2,balanceada_200x200,normal,ninguno,cnn_balanceada_200x200_normal_20251117_124549.keras,0.2692307829856872,2.1644232273101807,30,75.65995693206787,20576456,2025-11-17 12:45:50,
+3,moderada_profundidad_200x200,normal,ninguno,cnn_moderada_profundidad_200x200_normal_20251117_124554.keras,0.1923076957464218,2.174351692199707,1,80.11023998260498,19269320,2025-11-17 12:45:54,

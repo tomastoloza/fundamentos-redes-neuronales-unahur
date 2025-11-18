@@ -1,3 +1,9 @@
 .DS_Store
 .idea
 *.iml
+tp4/datos/
+
+# Model files - too large for git
+*.keras
+tp3/modelos/
+tp4/modelos/

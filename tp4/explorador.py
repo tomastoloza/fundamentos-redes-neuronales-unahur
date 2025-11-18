@@ -1,276 +1,402 @@
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt
-from tp3.comun.explorador_base import ExploradorBase
+import seaborn as sns
+import time
+from sklearn.metrics import confusion_matrix, classification_report
 from tp3.comun.cargador_modelos import CargadorModelos
 from .procesador_imagenes import ProcesadorImagenes
 
 
-class ExploradorEspacioLatenteImagenes(ExploradorBase):
+class ExploradorCNN:
     def __init__(self, modelo_path=None):
-        super().__init__()
         self.procesador = ProcesadorImagenes()
         self.cargador = CargadorModelos()
         self.modelo = None
-        self.encoder = None
-        self.decoder = None
-        self.datos_imagenes = None
-        self.representaciones_latentes = None
-        self.forma_imagen = None
+        self.datos_test = None
+        self.clases = None
+        self.predicciones = None
+        self.indice_actual = 0
         
         if modelo_path:
             self.cargar_modelo(modelo_path)
     
     def cargar_modelo(self, modelo_path):
         try:
-            self.modelo = self.cargador.cargar_modelo(modelo_path)
+            from tensorflow.keras.models import load_model
+            self.modelo = load_model(modelo_path)
             if self.modelo:
-                print(f"✓ Modelo cargado: {modelo_path}")
-                self.extraer_encoder_decoder()
+                print(f"✓ Modelo CNN cargado: {modelo_path}")
                 return True
         except Exception as e:
             print(f"✗ Error cargando modelo: {e}")
         return False
     
-    def extraer_encoder_decoder(self):
-        if not self.modelo:
+    def cargar_datos(self, tamaño_imagen=(200, 200), max_imagenes_por_clase=None):
+        print("Cargando datos para exploración...")
+        imagenes, labels = self.procesador.cargar_imagenes_multiclase(
+            tamaño_imagen, max_imagenes_por_clase
+        )
+        
+        datos_entrenamiento, datos_validacion, self.datos_test = self.procesador.preparar_datos_entrenamiento()
+        self.clases = self.procesador.obtener_nombres_clases()
+        
+        print(f"✓ Datos cargados: {len(self.clases)} clases")
+        return True
+    
+    def generar_predicciones(self):
+        if not self.modelo or not self.datos_test:
+            print("❌ Debe cargar modelo y datos primero")
+            return False
+        
+        X_test, y_test = self.datos_test
+        print("Generando predicciones...")
+        
+        self.predicciones = self.modelo.predict(X_test, verbose=0)
+        self.y_test_classes = np.argmax(y_test, axis=1)
+        self.y_pred_classes = np.argmax(self.predicciones, axis=1)
+        
+        accuracy = np.mean(self.y_test_classes == self.y_pred_classes)
+        print(f"✓ Predicciones generadas. Accuracy: {accuracy:.4f}")
+        return True
+    
+    def mostrar_matriz_confusion(self):
+        if self.predicciones is None:
+            self.generar_predicciones()
+        
+        cm = confusion_matrix(self.y_test_classes, self.y_pred_classes)
+        
+        plt.figure(figsize=(10, 8))
+        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
+                   xticklabels=self.clases, yticklabels=self.clases)
+        plt.title('Matriz de Confusión')
+        plt.xlabel('Predicción')
+        plt.ylabel('Verdadero')
+        plt.tight_layout()
+        plt.show()
+        
+        print("\nReporte de clasificación:")
+        print(classification_report(self.y_test_classes, self.y_pred_classes, 
+                                  target_names=self.clases))
+    
+    def mostrar_predicciones_por_clase(self, num_ejemplos=3):
+        if self.predicciones is None:
+            self.generar_predicciones()
+        
+        X_test, _ = self.datos_test
+        
+        fig, axes = plt.subplots(len(self.clases), num_ejemplos * 2, 
+                               figsize=(num_ejemplos * 6, len(self.clases) * 3))
+        
+        for i, clase in enumerate(self.clases):
+            indices_clase = np.where(self.y_test_classes == i)[0]
+            
+            correctos = [idx for idx in indices_clase if self.y_pred_classes[idx] == i]
+            incorrectos = [idx for idx in indices_clase if self.y_pred_classes[idx] != i]
+            
+            for j in range(num_ejemplos):
+                if j < len(correctos):
+                    idx = correctos[j]
+                    axes[i, j].imshow(X_test[idx])
+                    pred_prob = self.predicciones[idx][i]
+                    axes[i, j].set_title(f'✓ Correcto\nConf: {pred_prob:.3f}')
+                    axes[i, j].axis('off')
+                else:
+                    axes[i, j].axis('off')
+                
+                if j < len(incorrectos):
+                    idx = incorrectos[j]
+                    axes[i, j + num_ejemplos].imshow(X_test[idx])
+                    pred_clase = self.clases[self.y_pred_classes[idx]]
+                    pred_prob = self.predicciones[idx][self.y_pred_classes[idx]]
+                    axes[i, j + num_ejemplos].set_title(f'✗ Pred: {pred_clase}\nConf: {pred_prob:.3f}')
+                    axes[i, j + num_ejemplos].axis('off')
+                else:
+                    axes[i, j + num_ejemplos].axis('off')
+            
+            axes[i, 0].set_ylabel(f'{clase}', rotation=90, fontsize=12)
+        
+        plt.suptitle('Predicciones: Correctas (izq) vs Incorrectas (der)', fontsize=16)
+        plt.tight_layout()
+        plt.show()
+    
+    def explorar_imagen_individual(self, indice=None):
+        if self.predicciones is None:
+            self.generar_predicciones()
+        
+        X_test, _ = self.datos_test
+        
+        if indice is None:
+            indice = self.indice_actual
+        
+        if indice >= len(X_test):
+            print(f"Índice {indice} fuera de rango. Máximo: {len(X_test)-1}")
             return
+        
+        imagen = X_test[indice]
+        clase_real = self.clases[self.y_test_classes[indice]]
+        clase_pred = self.clases[self.y_pred_classes[indice]]
+        
+        prediccion_probs = self.predicciones[indice]
+        
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
+        
+        ax1.imshow(imagen)
+        ax1.set_title(f'Imagen {indice}\nReal: {clase_real}\nPredicción: {clase_pred}')
+        ax1.axis('off')
+        
+        ax2.bar(range(len(self.clases)), prediccion_probs)
+        ax2.set_xticks(range(len(self.clases)))
+        ax2.set_xticklabels(self.clases, rotation=45)
+        ax2.set_ylabel('Probabilidad')
+        ax2.set_title('Distribución de Probabilidades')
+        
+        max_prob_idx = np.argmax(prediccion_probs)
+        ax2.bar(max_prob_idx, prediccion_probs[max_prob_idx], color='red', alpha=0.7)
+        
+        plt.tight_layout()
+        plt.show()
+        
+        print(f"Imagen {indice}:")
+        print(f"  Clase real: {clase_real}")
+        print(f"  Predicción: {clase_pred}")
+        print(f"  Confianza: {prediccion_probs[max_prob_idx]:.4f}")
+        print(f"  ¿Correcto?: {'Sí' if clase_real == clase_pred else 'No'}")
+    
+    def mostrar_activaciones_capa(self, indice_imagen, nombre_capa=None):
+        if not self.modelo:
+            print("❌ Debe cargar un modelo primero")
+            return
+        
+        X_test, _ = self.datos_test
+        imagen = X_test[indice_imagen:indice_imagen+1]
+        
+        if nombre_capa is None:
+            capas_conv = [layer for layer in self.modelo.layers if 'conv' in layer.name.lower()]
+            if capas_conv:
+                capa = capas_conv[0]
+            else:
+                print("No se encontraron capas convolucionales")
+                return
+        else:
+            capa = self.modelo.get_layer(nombre_capa)
+        
+        from tensorflow.keras.models import Model
+        modelo_activacion = Model(inputs=self.modelo.input, outputs=capa.output)
+        activaciones = modelo_activacion.predict(imagen, verbose=0)
+        
+        num_filtros = min(16, activaciones.shape[-1])
+        filas = 4
+        columnas = 4
+        
+        fig, axes = plt.subplots(filas, columnas, figsize=(12, 12))
+        axes = axes.flatten()
+        
+        for i in range(num_filtros):
+            if i < activaciones.shape[-1]:
+                axes[i].imshow(activaciones[0, :, :, i], cmap='viridis')
+                axes[i].set_title(f'Filtro {i+1}')
+                axes[i].axis('off')
+            else:
+                axes[i].axis('off')
+        
+        plt.suptitle(f'Activaciones de {capa.name} - Imagen {indice_imagen}')
+        plt.tight_layout()
+        plt.show()
+    
+    def analizar_errores_por_clase(self):
+        if self.predicciones is None:
+            self.generar_predicciones()
+        
+        print("=== ANÁLISIS DE ERRORES POR CLASE ===\n")
+        
+        for i, clase in enumerate(self.clases):
+            indices_clase = np.where(self.y_test_classes == i)[0]
+            correctos = np.sum(self.y_pred_classes[indices_clase] == i)
+            total = len(indices_clase)
+            accuracy_clase = correctos / total if total > 0 else 0
+            
+            print(f"{clase}:")
+            print(f"  Total: {total}")
+            print(f"  Correctos: {correctos}")
+            print(f"  Accuracy: {accuracy_clase:.4f}")
+            
+            if total > correctos:
+                errores = indices_clase[self.y_pred_classes[indices_clase] != i]
+                predicciones_erroneas = self.y_pred_classes[errores]
+                
+                print(f"  Errores más comunes:")
+                for pred_clase in np.unique(predicciones_erroneas):
+                    count = np.sum(predicciones_erroneas == pred_clase)
+                    print(f"    Confundido con {self.clases[pred_clase]}: {count} veces")
+            print()
+    
+    def prediccion_automatica_aleatoria(self, intervalo=2.0, num_predicciones=20):
+        """
+        Cambia automáticamente de foto aleatoria y muestra predicciones en tiempo real
+        
+        Args:
+            intervalo: Segundos entre cambios de imagen
+            num_predicciones: Número total de predicciones a mostrar (0 = infinito)
+        """
+        if self.predicciones is None:
+            self.generar_predicciones()
+        
+        X_test, _ = self.datos_test
+        
+        print("=== PREDICCIÓN AUTOMÁTICA ALEATORIA ===")
+        print(f"Cambiando cada {intervalo}s")
+        print("Presiona Ctrl+C para detener")
+        print("-" * 50)
+        
+        contador = 0
+        aciertos = 0
         
         try:
-            capas = self.modelo.layers
-            punto_medio = len(capas) // 2
-            
-            from tensorflow.keras.models import Model
-            
-            self.encoder = Model(
-                inputs=self.modelo.input,
-                outputs=capas[punto_medio - 1].output
-            )
-            
-            entrada_decoder = self.encoder.output
-            salida_decoder = entrada_decoder
-            
-            for capa in capas[punto_medio:]:
-                salida_decoder = capa(salida_decoder)
-            
-            self.decoder = Model(
-                inputs=entrada_decoder,
-                outputs=salida_decoder
-            )
-            
-            print(f"✓ Encoder y decoder extraídos")
-            print(f"  Dimensión latente: {self.encoder.output.shape[1]}")
-            
-        except Exception as e:
-            print(f"⚠️  Error extrayendo encoder/decoder: {e}")
+            while num_predicciones == 0 or contador < num_predicciones:
+                # Seleccionar imagen aleatoria
+                self.indice_actual = np.random.randint(0, len(X_test))
+                
+                # Obtener datos de la imagen
+                imagen = X_test[self.indice_actual]
+                clase_real = self.clases[self.y_test_classes[self.indice_actual]]
+                clase_pred = self.clases[self.y_pred_classes[self.indice_actual]]
+                confianza = self.predicciones[self.indice_actual][self.y_pred_classes[self.indice_actual]]
+                
+                # Verificar si es correcto
+                es_correcto = clase_real == clase_pred
+                if es_correcto:
+                    aciertos += 1
+                
+                contador += 1
+                accuracy_actual = (aciertos / contador) * 100
+                
+                # Mostrar información
+                estado = "✅ CORRECTO" if es_correcto else "❌ ERROR"
+                print(f"[{contador:3d}] {estado} | Real: {clase_real:12s} | Pred: {clase_pred:12s} | Conf: {confianza:.3f} | Acc: {accuracy_actual:.1f}%")
+                
+                # Mostrar imagen cada 5 predicciones o si hay error
+                if contador % 5 == 0 or not es_correcto:
+                    self.mostrar_prediccion_rapida(self.indice_actual)
+                
+                # Esperar intervalo
+                time.sleep(intervalo)
+                
+        except KeyboardInterrupt:
+            print(f"\n🛑 Detenido por usuario")
+        
+        print(f"\n📊 RESUMEN FINAL:")
+        print(f"   Total predicciones: {contador}")
+        print(f"   Aciertos: {aciertos}")
+        print(f"   Accuracy final: {accuracy_actual:.1f}%")
     
-    def cargar_datos(self, tamaño_imagen=(64, 64), max_imagenes=100):
-        print("Cargando datos para exploración...")
-        imagenes = self.procesador.cargar_imagenes(tamaño_imagen, max_imagenes)
-        self.datos_imagenes = self.procesador.obtener_datos_aplanados()
-        self.forma_imagen = self.procesador.obtener_forma_original()
+    def mostrar_prediccion_rapida(self, indice):
+        """Muestra una predicción de forma rápida y compacta"""
+        X_test, _ = self.datos_test
         
-        if self.encoder:
-            print("Calculando representaciones latentes...")
-            self.representaciones_latentes = self.encoder.predict(self.datos_imagenes, verbose=0)
-            print(f"✓ {len(self.representaciones_latentes)} representaciones calculadas")
+        imagen = X_test[indice]
+        clase_real = self.clases[self.y_test_classes[indice]]
+        clase_pred = self.clases[self.y_pred_classes[indice]]
+        prediccion_probs = self.predicciones[indice]
         
-        return self.datos_imagenes
+        # Crear figura compacta
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4))
+        
+        # Mostrar imagen
+        ax1.imshow(imagen)
+        color = 'green' if clase_real == clase_pred else 'red'
+        ax1.set_title(f'Real: {clase_real}\nPred: {clase_pred}', color=color, fontweight='bold')
+        ax1.axis('off')
+        
+        # Mostrar probabilidades
+        colores = ['red' if i == self.y_pred_classes[indice] else 'lightblue' for i in range(len(self.clases))]
+        bars = ax2.bar(range(len(self.clases)), prediccion_probs, color=colores)
+        ax2.set_xticks(range(len(self.clases)))
+        ax2.set_xticklabels(self.clases, rotation=45, ha='right')
+        ax2.set_ylabel('Probabilidad')
+        ax2.set_title('Confianza por Clase')
+        ax2.set_ylim(0, 1)
+        
+        # Añadir valores en las barras
+        for bar, prob in zip(bars, prediccion_probs):
+            if prob > 0.1:  # Solo mostrar si es significativo
+                ax2.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.01, 
+                        f'{prob:.2f}', ha='center', va='bottom', fontsize=8)
+        
+        plt.tight_layout()
+        plt.show()
+        plt.pause(0.1)  # Pausa breve para que se renderice
     
-    def obtener_maximo_indice(self):
-        return len(self.datos_imagenes) if self.datos_imagenes is not None else 0
-    
-    def crear_visualizacion_inicial(self):
-        if not self.modelo or self.datos_imagenes is None:
-            print("Error: Modelo o datos no cargados")
-            return None, None
+    def navegacion_interactiva(self):
+        if self.predicciones is None:
+            self.generar_predicciones()
         
-        fig = plt.figure(figsize=(15, 10))
+        print("=== NAVEGACIÓN INTERACTIVA ===")
+        print("Comandos:")
+        print("  n: siguiente imagen")
+        print("  p: imagen anterior")
+        print("  r: imagen aleatoria")
+        print("  auto: modo automático aleatorio")
+        print("  m: mostrar matriz de confusión")
+        print("  a: análisis de errores")
+        print("  q: salir")
         
-        gs = fig.add_gridspec(2, 3, hspace=0.3, wspace=0.3)
+        X_test, _ = self.datos_test
         
-        ax_original = fig.add_subplot(gs[0, 0])
-        ax_reconstruida = fig.add_subplot(gs[0, 1])
-        ax_latente = fig.add_subplot(gs[0, 2])
-        ax_controles = fig.add_subplot(gs[1, :])
-        
-        self.axes = [ax_original, ax_reconstruida, ax_latente, ax_controles]
-        self.fig = fig
-        
-        fig.suptitle("Explorador de Espacio Latente - Imágenes", fontsize=16)
-        
-        self.actualizar_visualizacion()
-        return fig, self.axes
-    
-    def actualizar_visualizacion(self):
-        if not self.modelo or self.datos_imagenes is None or not hasattr(self, 'axes'):
-            return
-        
-        for ax in self.axes:
-            ax.clear()
-        
-        imagen_actual = self.datos_imagenes[self.indice_actual]
-        imagen_forma = self.procesador.reconstruir_forma_imagen(imagen_actual.reshape(1, -1))[0]
-        
-        reconstruccion = self.modelo.predict(imagen_actual.reshape(1, -1), verbose=0)[0]
-        reconstruccion_forma = self.procesador.reconstruir_forma_imagen(reconstruccion.reshape(1, -1))[0]
-        
-        self.axes[0].imshow(imagen_forma)
-        self.axes[0].set_title(f"Original (Imagen {self.indice_actual + 1})")
-        self.axes[0].axis('off')
-        
-        self.axes[1].imshow(reconstruccion_forma)
-        self.axes[1].set_title("Reconstruida")
-        self.axes[1].axis('off')
-        
-        if self.representaciones_latentes is not None:
-            self.visualizar_espacio_latente()
-        
-        self.mostrar_metricas_y_controles(imagen_actual, reconstruccion)
-        
-        plt.draw()
-    
-    def visualizar_espacio_latente(self):
-        if self.representaciones_latentes is None:
-            return
-        
-        dim_latente = self.representaciones_latentes.shape[1]
-        
-        if dim_latente >= 2:
-            scatter = self.axes[2].scatter(
-                self.representaciones_latentes[:, 0],
-                self.representaciones_latentes[:, 1],
-                c=range(len(self.representaciones_latentes)),
-                cmap='viridis',
-                alpha=0.6,
-                s=30
-            )
+        while True:
+            self.explorar_imagen_individual(self.indice_actual)
             
-            punto_actual = self.representaciones_latentes[self.indice_actual]
-            self.axes[2].scatter(
-                punto_actual[0], punto_actual[1],
-                c='red', s=100, marker='x', linewidths=3
-            )
+            comando = input(f"\nImagen {self.indice_actual}/{len(X_test)-1} - Comando: ").lower().strip()
             
-            self.axes[2].set_title("Espacio Latente (2D)")
-            self.axes[2].set_xlabel("Dimensión 1")
-            self.axes[2].set_ylabel("Dimensión 2")
-            self.axes[2].grid(True, alpha=0.3)
-            
-        else:
-            self.axes[2].hist(self.representaciones_latentes.flatten(), bins=50, alpha=0.7)
-            valor_actual = self.representaciones_latentes[self.indice_actual, 0]
-            self.axes[2].axvline(valor_actual, color='red', linestyle='--', linewidth=2)
-            self.axes[2].set_title("Distribución Espacio Latente (1D)")
-            self.axes[2].set_xlabel("Valor latente")
-            self.axes[2].set_ylabel("Frecuencia")
-    
-    def mostrar_metricas_y_controles(self, original, reconstruccion):
-        self.axes[3].axis('off')
-        
-        mse = np.mean((original - reconstruccion) ** 2)
-        mae = np.mean(np.abs(original - reconstruccion))
-        
-        if self.representaciones_latentes is not None:
-            rep_actual = self.representaciones_latentes[self.indice_actual]
-            info_latente = f"Representación latente: {rep_actual[:5]}{'...' if len(rep_actual) > 5 else ''}"
-        else:
-            info_latente = "Representación latente: No disponible"
-        
-        nombre_archivo = self.procesador.nombres_archivos[self.indice_actual] if self.indice_actual < len(self.procesador.nombres_archivos) else "N/A"
-        
-        info_text = f"""MÉTRICAS DE RECONSTRUCCIÓN
-        
-Imagen: {self.indice_actual + 1}/{len(self.datos_imagenes)}
-Archivo: {nombre_archivo}
-Forma: {self.forma_imagen}
-
-MSE: {mse:.6f}
-MAE: {mae:.6f}
-
-{info_latente}
-
-CONTROLES:
-← → : Navegar imágenes
-H   : Mostrar ayuda
-Q   : Salir"""
-        
-        self.axes[3].text(0.05, 0.95, info_text, transform=self.axes[3].transAxes,
-                         verticalalignment='top', fontfamily='monospace', fontsize=10)
-    
-    def explorar_interactivo(self):
-        if not self.modelo:
-            print("Error: Debe cargar un modelo primero")
-            return
-        
-        if self.datos_imagenes is None:
-            print("Cargando datos...")
-            self.cargar_datos()
-        
-        print("=== EXPLORADOR DE ESPACIO LATENTE - IMÁGENES ===")
-        print("Use las teclas para navegar por las imágenes y explorar el espacio latente")
-        self.iniciar_exploracion_interactiva()
-    
-    def generar_imagen_desde_latente(self, vector_latente):
-        if not self.decoder:
-            print("Error: Decoder no disponible")
-            return None
-        
-        imagen_generada = self.decoder.predict(vector_latente.reshape(1, -1), verbose=0)[0]
-        return self.procesador.reconstruir_forma_imagen(imagen_generada.reshape(1, -1))[0]
-    
-    def interpolar_en_espacio_latente(self, indice1, indice2, num_pasos=10):
-        if self.representaciones_latentes is None:
-            print("Error: Representaciones latentes no disponibles")
-            return
-        
-        rep1 = self.representaciones_latentes[indice1]
-        rep2 = self.representaciones_latentes[indice2]
-        
-        alphas = np.linspace(0, 1, num_pasos)
-        interpolaciones = []
-        
-        for alpha in alphas:
-            rep_interpolada = (1 - alpha) * rep1 + alpha * rep2
-            imagen_interpolada = self.generar_imagen_desde_latente(rep_interpolada)
-            if imagen_interpolada is not None:
-                interpolaciones.append(imagen_interpolada)
-        
-        if interpolaciones:
-            fig, axes = plt.subplots(1, len(interpolaciones), figsize=(len(interpolaciones) * 2, 2))
-            if len(interpolaciones) == 1:
-                axes = [axes]
-            
-            for i, img in enumerate(interpolaciones):
-                axes[i].imshow(img)
-                axes[i].set_title(f"α={alphas[i]:.2f}")
-                axes[i].axis('off')
-            
-            plt.suptitle(f"Interpolación: Imagen {indice1+1} → Imagen {indice2+1}")
-            plt.tight_layout()
-            plt.show()
+            if comando == 'q':
+                break
+            elif comando == 'n':
+                self.indice_actual = (self.indice_actual + 1) % len(X_test)
+            elif comando == 'p':
+                self.indice_actual = (self.indice_actual - 1) % len(X_test)
+            elif comando == 'r':
+                self.indice_actual = np.random.randint(0, len(X_test))
+            elif comando == 'auto':
+                try:
+                    intervalo = float(input("Intervalo en segundos (default 2.0): ") or "2.0")
+                    num_pred = int(input("Número de predicciones (0=infinito): ") or "20")
+                    self.prediccion_automatica_aleatoria(intervalo, num_pred)
+                except ValueError:
+                    print("Valores inválidos, usando defaults")
+                    self.prediccion_automatica_aleatoria()
+            elif comando == 'm':
+                self.mostrar_matriz_confusion()
+            elif comando == 'a':
+                self.analizar_errores_por_clase()
+            else:
+                try:
+                    nuevo_indice = int(comando)
+                    if 0 <= nuevo_indice < len(X_test):
+                        self.indice_actual = nuevo_indice
+                    else:
+                        print(f"Índice fuera de rango. Use 0-{len(X_test)-1}")
+                except ValueError:
+                    print("Comando no reconocido")
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Explorador interactivo de espacio latente para imágenes')
-    parser.add_argument('modelo', type=str, nargs='?',
-                       help='Nombre o ruta del modelo a cargar')
-    parser.add_argument('--listar', action='store_true',
-                       help='Listar modelos disponibles')
-    parser.add_argument('--tamaño', type=str, default='64x64',
-                       help='Tamaño de imagen (ej: 64x64)')
-    parser.add_argument('--max-imagenes', type=int, default=100,
-                       help='Número máximo de imágenes a cargar')
+    parser = argparse.ArgumentParser(description='Explorador CNN para clasificación de animales')
+    parser.add_argument('modelo', help='Ruta al modelo CNN (.keras)')
+    parser.add_argument('--tamaño', default='200x200', help='Tamaño de imagen (ej: 200x200)')
+    parser.add_argument('--max-imagenes', type=int, help='Máximo de imágenes por clase')
+    parser.add_argument('--listar', action='store_true', help='Listar modelos disponibles')
+    parser.add_argument('--matriz', action='store_true', help='Mostrar solo matriz de confusión')
+    parser.add_argument('--predicciones', action='store_true', help='Mostrar predicciones por clase')
+    parser.add_argument('--interactivo', action='store_true', help='Modo interactivo')
+    parser.add_argument('--auto', action='store_true', help='Modo automático aleatorio')
+    parser.add_argument('--intervalo', type=float, default=2.0, help='Intervalo en segundos para modo auto')
+    parser.add_argument('--num-pred', type=int, default=20, help='Número de predicciones en modo auto')
     
     args = parser.parse_args()
     
     if args.listar:
         cargador = CargadorModelos()
-        modelos = cargador.listar_modelos()
-        print("Modelos disponibles:")
-        for modelo in modelos:
-            if 'tp4' in modelo or 'imagen' in modelo:
-                print(f"  - {modelo}")
+        cargador.listar_modelos_disponibles()
         return
     
     try:
@@ -280,16 +406,26 @@ def main():
         print(f"Error: Formato de tamaño inválido '{args.tamaño}'")
         return
     
-    print("=== EXPLORADOR DE ESPACIO LATENTE - IMÁGENES ===")
-    print("TP4: Autocodificadores para imágenes de suricatas")
-    print()
+    explorador = ExploradorCNN()
     
-    explorador = ExploradorEspacioLatenteImagenes(args.modelo)
-    if explorador.modelo is not None:
-        explorador.cargar_datos(tamaño_imagen, args.max_imagenes)
-        explorador.explorar_interactivo()
+    if not explorador.cargar_modelo(args.modelo):
+        return
+    
+    if not explorador.cargar_datos(tamaño_imagen, args.max_imagenes):
+        return
+    
+    if args.matriz:
+        explorador.mostrar_matriz_confusion()
+    elif args.predicciones:
+        explorador.mostrar_predicciones_por_clase()
+    elif args.interactivo:
+        explorador.navegacion_interactiva()
+    elif args.auto:
+        explorador.prediccion_automatica_aleatoria(args.intervalo, args.num_pred)
     else:
-        print("No se pudo cargar el modelo especificado.")
+        explorador.mostrar_matriz_confusion()
+        explorador.mostrar_predicciones_por_clase()
+        explorador.analizar_errores_por_clase()
 
 
 if __name__ == "__main__":
